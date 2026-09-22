@@ -1,0 +1,97 @@
+@import "tailwindcss";
+
+/* "Bold athletic" — vivid, high-energy palette (Strava/Nike Run Club
+   territory) replacing the previous flat, low-saturation earthy tones. */
+
+:root {
+  --background: #f7f7f5;
+  --surface: #ffffff;
+  --surface-2: #f0f0ed;
+  --foreground: #14171a;
+  --muted: #5b6167;
+  --accent: #ff5a1f;
+  --accent-foreground: #ffffff;
+  --accent-gradient-to: #ff3d6e;
+  --accent2: #00b8a9;
+  --line: #e5e5e1;
+  --good: #16a34a;
+  --good-bg: #e9f9ee;
+  --warn: #d97706;
+  --warn-bg: #fef3e2;
+  --danger: #dc2626;
+  --danger-bg: #fdeaea;
+  --shadow-card: 0 1px 2px rgba(20, 23, 26, 0.04), 0 8px 24px -12px rgba(20, 23, 26, 0.12);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-gradient-to: var(--accent-gradient-to);
+  --color-accent2: var(--accent2);
+  --color-line: var(--line);
+  --color-good: var(--good);
+  --color-good-bg: var(--good-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0b0d0f;
+    --surface: #16191c;
+    --surface-2: #1e2226;
+    --foreground: #f5f6f5;
+    --muted: #9ba3a8;
+    --accent: #ff7a3d;
+    --accent-foreground: #14100c;
+    --accent-gradient-to: #ff5c8a;
+    --accent2: #2dd4cf;
+    --line: #262b2f;
+    --good: #4ade80;
+    --good-bg: #12261a;
+    --warn: #fbbf24;
+    --warn-bg: #2b2008;
+    --danger: #f87171;
+    --danger-bg: #2b1414;
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+.shadow-card {
+  box-shadow: var(--shadow-card);
+}
+
+.gradient-accent {
+  background-image: linear-gradient(135deg, var(--accent), var(--accent-gradient-to));
+}
+
+/* Crossfades two stacked exercise photos (start/finish position) on a loop,
+   so a photo card reads like a rep in motion without any JS. */
+@keyframes exercise-photo-crossfade {
+  0%, 40% { opacity: 1; }
+  50%, 90% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.exercise-photo-frame-a {
+  animation: exercise-photo-crossfade 3.2s ease-in-out infinite;
+}
+
+.exercise-photo-frame-b {
+  animation: exercise-photo-crossfade 3.2s ease-in-out infinite reverse;
+}

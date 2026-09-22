@@ -1,0 +1,291 @@
+// Healfy data model. Postgres (Neon/Supabase) both locally and in
+// production — point DATABASE_URL at your connection string.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Single-athlete account. The app is single-tenant, but modeling a real
+// row (instead of a global singleton) keeps the schema honest and makes a
+// future multi-athlete version a non-rewrite.
+model Athlete {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String?
+
+  // Used to compute real HR zones instead of age-based guesses.
+  maxHR     Int?
+  restingHR Int?
+  lthr      Int? // lactate threshold heart rate
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stravaAccount   StravaAccount?
+  garminAccount   GarminAccount?
+  hevyAccount     HevyAccount?
+  activities      Activity[]
+  dailyMetrics    DailyMetric[]
+  plannedWorkouts PlannedWorkout[]
+  chatMessages    ChatMessage[]
+
+  hevyRoutineFolders    HevyRoutineFolder[]
+  hevyRoutines          HevyRoutine[]
+  hevyExerciseTemplates HevyExerciseTemplate[]
+  hevyWorkouts          HevyWorkout[]
+  hevyBodyMeasurements  HevyBodyMeasurement[]
+}
+
+model StravaAccount {
+  id            String   @id @default(cuid())
+  athleteId     String   @unique
+  athlete       Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  stravaAthleteId String   @unique
+  accessToken     String
+  refreshToken    String
+  expiresAt       DateTime
+
+  webhookVerified Boolean  @default(false)
+  connectedAt     DateTime @default(now())
+  lastSyncedAt    DateTime?
+}
+
+model GarminAccount {
+  id        String  @id @default(cuid())
+  athleteId String  @unique
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  // Encrypted (AES-256-GCM) serialized session/OAuth token from the
+  // unofficial Garmin Connect client — never the raw password.
+  encryptedSession String
+
+  connectedAt  DateTime  @default(now())
+  lastSyncedAt DateTime?
+}
+
+enum ActivitySource {
+  STRAVA
+  GARMIN
+  MERGED
+}
+
+model Activity {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  source         ActivitySource
+  stravaId       String? @unique
+  garminId       String? @unique
+
+  name          String
+  type          String // Run, Ride, etc.
+  startTime     DateTime
+  movingTimeSec Int
+  distanceMeters Float
+  elevationGainMeters Float?
+  elevationLossMeters Float?
+
+  avgHR Int?
+  maxHR Int?
+  avgPaceSecPerKm Float?
+
+  // Weather at activity time (Garmin sidecar only; null for Strava-sourced
+  // activities and any Garmin activity Garmin has no weather record for).
+  temperatureC Float?
+  humidityPct  Int?
+
+  // Downsampled time-series (time, heartrate, velocity, distance),
+  // capped at ~500 points — plenty of resolution for charts and the
+  // HR-drift calc without storing raw per-second data forever.
+  streamData Json?
+
+  // Derived, precomputed by the insight engine on sync so the dashboard
+  // never recomputes on every page load.
+  trainingLoad     Float?
+  aerobicEfficiency Float? // meters per beat-minute on the run
+  hrDriftPct       Float?
+
+  plannedWorkout PlannedWorkout?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([athleteId, startTime])
+}
+
+// Garmin readiness/recovery signals, one row per day.
+model DailyMetric {
+  id        String   @id @default(cuid())
+  athleteId String
+  athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  date      DateTime
+
+  bodyBattery        Int?
+  hrvStatus          String? // BALANCED, UNBALANCED, LOW, etc.
+  hrvMs              Int?
+  restingHR          Int?
+  sleepScore         Int?
+  trainingReadiness  Int?
+
+  createdAt DateTime @default(now())
+
+  @@unique([athleteId, date])
+}
+
+// A structured workout target (e.g. from Runna, delivered to the watch via
+// Garmin) — target pace/HR per interval — matched against the Activity that
+// fulfilled it so we can show plan vs. actual.
+model PlannedWorkout {
+  id        String   @id @default(cuid())
+  athleteId String
+  athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  garminWorkoutId String   @unique
+  name            String
+  scheduledDate   DateTime
+  structure       Json // ordered list of steps: {label, targetType, targetLow, targetHigh, durationSec|distanceMeters}
+
+  activityId String?   @unique
+  activity   Activity? @relation(fields: [activityId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  athleteId String
+  athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  role      String // user | assistant
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([athleteId, createdAt])
+}
+
+// Hevy (strength training) integration. Unlike Strava/Garmin, auth is a
+// single long-lived API key (HEVY_API_KEY) held server-side — there's no
+// per-athlete OAuth token or password to store, so this row is purely
+// connection bookkeeping (is Hevy "connected" for this athlete, when did we
+// last sync).
+model HevyAccount {
+  id        String  @id @default(cuid())
+  athleteId String  @unique
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  connectedAt  DateTime  @default(now())
+  lastSyncedAt DateTime?
+
+  // Cursor for incremental GET /workouts/events sync. Null means "no
+  // successful sync yet" — the next sync does a full GET /workouts
+  // pagination backfill instead of an events-since query.
+  lastEventSyncAt DateTime?
+}
+
+model HevyRoutineFolder {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  // Hevy's routine_folder ids are numeric, but every Hevy id is stored as
+  // a string here since exercise_template ids are a mix of short hex codes
+  // and full UUIDs — treat all Hevy-side ids as opaque strings throughout.
+  hevyFolderId String @unique
+  title        String
+  hevyIndex    Int?
+
+  routines HevyRoutine[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HevyRoutine {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  hevyRoutineId String             @unique
+  title         String
+  folderId      String?
+  folder        HevyRoutineFolder? @relation(fields: [folderId], references: [id])
+
+  // Hevy's own nested exercises/sets shape (exercise_template_id, sets with
+  // weight_kg/reps/type/etc), kept as JSON rather than normalized into more
+  // tables — the same approach PlannedWorkout.structure already takes for
+  // Garmin's step lists, and Hevy's shape is deep enough that flattening it
+  // would just be a lossy re-encoding of what Hevy already sends.
+  exercises Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HevyExerciseTemplate {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  hevyExerciseTemplateId String  @unique
+  title                  String
+  type                   String?
+  primaryMuscleGroup     String?
+  equipment              String?
+  isCustom               Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Completed strength workouts pulled from Hevy — deliberately a separate
+// model from Activity (Strava/Garmin's cardio-shaped table: pace, HR
+// zones, GPS streams) rather than shoehorned into it; sets/reps/weight
+// don't map onto those fields and mixing the two training types in one
+// table would make both harder to query.
+model HevyWorkout {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  hevyWorkoutId String    @unique
+  title         String
+  startTime     DateTime
+  endTime       DateTime?
+
+  // Same JSON-blob approach as HevyRoutine.exercises above.
+  exercises Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([athleteId, startTime])
+}
+
+model HevyBodyMeasurement {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  hevyMeasurementId String   @unique
+  date              DateTime
+  weightKg          Float?
+
+  // Any other measurement fields Hevy returns (height_cm, body fat %,
+  // circumference measurements, etc.) beyond the weight_kg column above —
+  // this account's data only exercises weight_kg, so the rest is kept as
+  // an opaque catch-all rather than guessing at column names for fields
+  // never observed from the live API.
+  otherMeasurements Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([athleteId, date])
+}

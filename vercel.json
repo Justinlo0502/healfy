@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/sync", "schedule": "0 3 * * *" },
+    { "path": "/api/sync/garmin", "schedule": "10 3 * * *" },
+    { "path": "/api/sync/hevy", "schedule": "20 3 * * *" }
+  ]
+}

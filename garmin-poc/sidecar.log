@@ -1,0 +1,23 @@
+INFO:     Started server process [107260]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8787 (Press CTRL+C to quit)
+Garmin sidecar logged in. Token cache: C:\Users\oneth/.garminconnect
+INFO:     127.0.0.1:58069 - "GET /activities?limit=2 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-17 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-16 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-15 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-14 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-13 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-12 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-11 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-10 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-09 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-08 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-07 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-06 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /daily-metrics?date=2026-08-05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /daily-metrics?date=2026-08-04 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65421 - "GET /workouts?limit=50 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65423 - "GET /activities?limit=100 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57551 - "GET /health HTTP/1.1" 404 Not Found
