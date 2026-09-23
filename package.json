@@ -13,6 +13,12 @@
   "prisma": {
     "seed": "tsx prisma/seed.ts"
   },
+  "allowScripts": {
+    "@prisma/engines@7.9.1": true,
+    "esbuild@0.28.2": true,
+    "prisma@7.9.1": true,
+    "unrs-resolver@1.12.2": true
+  },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",
     "@modelcontextprotocol/sdk": "^1.30.0",
