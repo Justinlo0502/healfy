@@ -1,26 +1,27 @@
 @import "tailwindcss";
 
-/* "Bold athletic" — vivid, high-energy palette (Strava/Nike Run Club
-   territory) replacing the previous flat, low-saturation earthy tones. */
+/* "Trail Console" — a field-journal / topographic-map palette (warm
+   parchment + deep pine, sharp ember accent) paired with an instrument-panel
+   mono for data, replacing the earlier flat Strava-orange/teal clone. */
 
 :root {
-  --background: #f7f7f5;
-  --surface: #ffffff;
-  --surface-2: #f0f0ed;
-  --foreground: #14171a;
-  --muted: #5b6167;
-  --accent: #ff5a1f;
-  --accent-foreground: #ffffff;
-  --accent-gradient-to: #ff3d6e;
-  --accent2: #00b8a9;
-  --line: #e5e5e1;
-  --good: #16a34a;
-  --good-bg: #e9f9ee;
-  --warn: #d97706;
-  --warn-bg: #fef3e2;
-  --danger: #dc2626;
-  --danger-bg: #fdeaea;
-  --shadow-card: 0 1px 2px rgba(20, 23, 26, 0.04), 0 8px 24px -12px rgba(20, 23, 26, 0.12);
+  --background: #f3ead9;
+  --surface: #fffdf6;
+  --surface-2: #ecdfc0;
+  --foreground: #211c14;
+  --muted: #6f6552;
+  --accent: #c14a1f;
+  --accent-foreground: #fff8ef;
+  --accent-gradient-to: #e2872f;
+  --accent2: #2f4a37;
+  --line: #ddcfa8;
+  --good: #3f7d43;
+  --good-bg: #e3efdc;
+  --warn: #9c6a17;
+  --warn-bg: #f5ead0;
+  --danger: #a53a26;
+  --danger-bg: #f5e0d6;
+  --shadow-card: 0 1px 2px rgba(33, 28, 20, 0.07), 0 10px 28px -14px rgba(33, 28, 20, 0.3);
 }
 
 @theme inline {
@@ -40,36 +41,50 @@
   --color-warn-bg: var(--warn-bg);
   --color-danger: var(--danger);
   --color-danger-bg: var(--danger-bg);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body);
+  --font-mono: var(--font-data);
+  --font-display: var(--font-heading);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0b0d0f;
-    --surface: #16191c;
-    --surface-2: #1e2226;
-    --foreground: #f5f6f5;
-    --muted: #9ba3a8;
-    --accent: #ff7a3d;
-    --accent-foreground: #14100c;
-    --accent-gradient-to: #ff5c8a;
-    --accent2: #2dd4cf;
-    --line: #262b2f;
-    --good: #4ade80;
-    --good-bg: #12261a;
-    --warn: #fbbf24;
-    --warn-bg: #2b2008;
-    --danger: #f87171;
-    --danger-bg: #2b1414;
-    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 8px 24px -12px rgba(0, 0, 0, 0.5);
+    --background: #12150f;
+    --surface: #1a1e15;
+    --surface-2: #232819;
+    --foreground: #f1ead4;
+    --muted: #a49c81;
+    --accent: #ff8a3d;
+    --accent-foreground: #1c1206;
+    --accent-gradient-to: #ffc25c;
+    --accent2: #7ed957;
+    --line: #313627;
+    --good: #7ed957;
+    --good-bg: #1c2814;
+    --warn: #ffcf5c;
+    --warn-bg: #2b2410;
+    --danger: #ff7a5c;
+    --danger-bg: #2c1712;
+    --shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 10px 28px -12px rgba(0, 0, 0, 0.6);
   }
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image:
+    radial-gradient(ellipse 900px 480px at 12% -10%, color-mix(in srgb, var(--accent-gradient-to) 20%, transparent), transparent 60%),
+    radial-gradient(ellipse 760px 520px at 108% 4%, color-mix(in srgb, var(--accent2) 18%, transparent), transparent 55%),
+    repeating-linear-gradient(115deg, color-mix(in srgb, var(--foreground) 4%, transparent) 0px, color-mix(in srgb, var(--foreground) 4%, transparent) 1px, transparent 1px, transparent 64px);
+  background-attachment: fixed;
   color: var(--foreground);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, sans-serif;
+  font-feature-settings: "ss01" 1;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.01em;
 }
 
 .shadow-card {
@@ -78,6 +93,39 @@ body {
 
 .gradient-accent {
   background-image: linear-gradient(135deg, var(--accent), var(--accent-gradient-to));
+}
+
+/* One well-orchestrated page load: cards/rows rise in with a staggered
+   delay (set per-element via the `style` attribute) instead of scattered
+   micro-interactions everywhere. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  animation: rise-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
+  }
+}
+
+/* Trail-blaze: a dashed waypoint marker used for the active nav item. */
+.trail-marker::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
 }
 
 /* Crossfades two stacked exercise photos (start/finish position) on a loop,

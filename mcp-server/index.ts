@@ -8,21 +8,13 @@
 // zod, since MCP and the Anthropic SDK use different schema formats with no
 // shared representation.
 
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import "./env";
 import { z } from "zod";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// db.ts falls back to the relative "file:./dev.db" (src/lib/db.ts) — Claude
-// Desktop spawns this process with an unpredictable working directory, so
-// pin an absolute path before db.ts is ever imported.
-process.env.DATABASE_URL = `file:${path.resolve(__dirname, "../dev.db")}`;
-
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { db } from "../src/lib/db";
 import { executeTool } from "../src/lib/chat-tools";
+import { syncGarminForAthlete } from "../src/lib/garmin";
 
 const server = new McpServer({ name: "healfy", version: "1.0.0" });
 
@@ -100,6 +92,20 @@ server.registerTool(
     },
   },
   (args) => handle("compare_planned_vs_actual", args)
+);
+
+server.registerTool(
+  "sync_garmin",
+  {
+    description:
+      "Pull fresh data from Garmin Connect right now (recent activities, daily recovery metrics, and scheduled workouts) into Healfy's database. Call this before answering questions about today's or very recent training if the data may be stale. Returns counts of what was synced. Takes up to a minute.",
+    inputSchema: {},
+  },
+  async () => {
+    const id = await getAthleteId();
+    const result = await syncGarminForAthlete(id);
+    return { content: [{ type: "text" as const, text: JSON.stringify(result) }] };
+  }
 );
 
 async function main() {

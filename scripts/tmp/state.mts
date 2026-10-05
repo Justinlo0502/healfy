@@ -1,0 +1,13 @@
+import "../../mcp-server/env.ts";
+import { db } from "../../src/lib/db.ts";
+import { syncHevyForAthlete } from "../../src/lib/hevy.ts";
+const a = await db.athlete.findFirst();
+console.log("SYNC", JSON.stringify(await syncHevyForAthlete(a!.id)));
+const folders = await db.hevyRoutineFolder.findMany({ where: { athleteId: a!.id } });
+const fmap = new Map(folders.map(f => [f.id, f.title]));
+console.log("FOLDERS", JSON.stringify(folders.map(f => ({ id: f.id, hid: f.hevyFolderId, title: f.title, idx: f.hevyIndex }))));
+const rs = await db.hevyRoutine.findMany({ where: { athleteId: a!.id } });
+for (const r of rs as any[]) console.log("ROUTINE", r.hevyRoutineId, "|", r.title, "| folder:", fmap.get(r.folderId) ?? null, "|", r.exercises.length, "ex");
+const ws = await db.hevyWorkout.findMany({ where: { athleteId: a!.id }, orderBy: { startTime: "desc" }, take: 8 });
+for (const w of ws as any[]) console.log("WORKOUT", w.startTime.toISOString(), w.title);
+await db.$disconnect();

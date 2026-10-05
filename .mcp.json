@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "healfy": {
+      "command": "node",
+      "args": ["node_modules/tsx/dist/cli.mjs", "mcp-server/index.ts"]
+    }
+  }
+}

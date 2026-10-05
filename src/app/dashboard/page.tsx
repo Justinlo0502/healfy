@@ -3,11 +3,16 @@ import { redirect } from "next/navigation";
 import { requireAthlete } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { acwr } from "@/lib/insights";
-import { daysAgo, formatDistanceKm, formatDuration, startOfToday } from "@/lib/format";
+import { daysAgo, formatDate, formatDistanceKm, formatDuration, startOfToday } from "@/lib/format";
 import ActivityListItem from "@/components/ActivityListItem";
-import { ArrowRight, Battery, Gauge, Heart, Moon, Zap } from "lucide-react";
+import { ArrowRight, Battery, Gauge, Heart, Moon, Scale, Zap } from "lucide-react";
 
 const LOOKBACK_DAYS = 60;
+const LB_PER_KG = 2.20462;
+
+function average(values: number[]): number | null {
+  return values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : null;
+}
 
 const ACWR_STYLES: Record<string, string> = {
   low: "bg-surface-2 text-muted",
@@ -29,7 +34,7 @@ export default async function DashboardPage() {
 
   const since = daysAgo(LOOKBACK_DAYS);
 
-  const [activities, todayMetric, garminAccount] = await Promise.all([
+  const [activities, todayMetric, garminAccount, renphoAccount, weighIns] = await Promise.all([
     db.activity.findMany({
       where: { athleteId: athlete.id, startTime: { gte: since } },
       orderBy: { startTime: "desc" },
@@ -42,6 +47,11 @@ export default async function DashboardPage() {
       orderBy: { date: "desc" },
     }),
     db.garminAccount.findUnique({ where: { athleteId: athlete.id } }),
+    db.renphoAccount.findUnique({ where: { athleteId: athlete.id } }),
+    db.renphoMeasurement.findMany({
+      where: { athleteId: athlete.id, measuredAt: { gte: daysAgo(14) } },
+      orderBy: { measuredAt: "desc" },
+    }),
   ]);
 
   if (activities.length === 0) {
@@ -77,18 +87,33 @@ export default async function DashboardPage() {
 
   const recent = activities.slice(0, 5);
 
+  // Daily scale readings swing 1-3 lb with water and food, so the trend is
+  // this week's average vs last week's rather than reading-to-reading.
+  const latestWeighIn = weighIns[0] ?? null;
+  const thisWeekAvgLb = average(
+    weighIns.filter((m) => m.measuredAt >= weekAgo).map((m) => m.weightKg * LB_PER_KG)
+  );
+  const lastWeekAvgLb = average(
+    weighIns.filter((m) => m.measuredAt < weekAgo).map((m) => m.weightKg * LB_PER_KG)
+  );
+  const weeklyChangeLb =
+    thisWeekAvgLb != null && lastWeekAvgLb != null ? thisWeekAvgLb - lastWeekAvgLb : null;
+
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
-      <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
+      <h1 className="reveal font-display text-3xl font-semibold italic tracking-tight">Dashboard</h1>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <section className="rounded-2xl border border-line bg-surface p-5 shadow-card">
+        <section
+          className="reveal rounded-2xl border border-line bg-surface p-5 shadow-card"
+          style={{ animationDelay: "60ms" }}
+        >
           <div className="flex items-center gap-2 text-sm font-medium text-muted">
             <Gauge className="h-4 w-4" strokeWidth={2.5} />
             Acute:Chronic Load Ratio
           </div>
           <div className="mt-3 flex items-baseline gap-3">
-            <span className="tabular-nums text-4xl font-extrabold tracking-tight">
+            <span className="tabular-nums font-mono text-4xl font-bold tracking-tight">
               {acwrResult.ratio != null ? acwrResult.ratio.toFixed(2) : "—"}
             </span>
             <span
@@ -101,16 +126,19 @@ export default async function DashboardPage() {
           <dl className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted">
             <div>
               <dt>7-day avg load</dt>
-              <dd className="tabular-nums text-foreground">{acwrResult.acute7dAvg.toFixed(0)}</dd>
+              <dd className="tabular-nums font-mono text-foreground">{acwrResult.acute7dAvg.toFixed(0)}</dd>
             </div>
             <div>
               <dt>28-day avg load</dt>
-              <dd className="tabular-nums text-foreground">{acwrResult.chronic28dAvg.toFixed(0)}</dd>
+              <dd className="tabular-nums font-mono text-foreground">{acwrResult.chronic28dAvg.toFixed(0)}</dd>
             </div>
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-line bg-surface p-5 shadow-card">
+        <section
+          className="reveal rounded-2xl border border-line bg-surface p-5 shadow-card"
+          style={{ animationDelay: "120ms" }}
+        >
           <div className="flex items-center gap-2 text-sm font-medium text-muted">
             <Zap className="h-4 w-4" strokeWidth={2.5} />
             Last 7 Days
@@ -118,24 +146,27 @@ export default async function DashboardPage() {
           <dl className="mt-3 grid grid-cols-3 gap-3">
             <div>
               <dt className="text-xs text-muted">Distance</dt>
-              <dd className="tabular-nums mt-1 text-xl font-extrabold tracking-tight">
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
                 {formatDistanceKm(weekDistance)}
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Time</dt>
-              <dd className="tabular-nums mt-1 text-xl font-extrabold tracking-tight">
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
                 {formatDuration(weekTime)}
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Runs</dt>
-              <dd className="tabular-nums mt-1 text-xl font-extrabold tracking-tight">{thisWeek.length}</dd>
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">{thisWeek.length}</dd>
             </div>
           </dl>
         </section>
 
-        <section className="rounded-2xl border border-line bg-surface p-5 shadow-card">
+        <section
+          className="reveal rounded-2xl border border-line bg-surface p-5 shadow-card"
+          style={{ animationDelay: "180ms" }}
+        >
           <div className="flex items-center gap-2 text-sm font-medium text-muted">
             <Moon className="h-4 w-4" strokeWidth={2.5} />
             Recovery
@@ -146,7 +177,7 @@ export default async function DashboardPage() {
                 <dt className="flex items-center gap-1 text-xs text-muted">
                   <Battery className="h-3.5 w-3.5" /> Body Battery
                 </dt>
-                <dd className="tabular-nums mt-1 text-xl font-extrabold tracking-tight">
+                <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
                   {todayMetric.bodyBattery ?? "—"}
                 </dd>
               </div>
@@ -162,7 +193,7 @@ export default async function DashboardPage() {
                 <dt className="flex items-center gap-1 text-xs text-muted">
                   <Moon className="h-3.5 w-3.5" /> Sleep Score
                 </dt>
-                <dd className="tabular-nums mt-1 text-xl font-extrabold tracking-tight">
+                <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
                   {todayMetric.sleepScore ?? "—"}
                 </dd>
               </div>
@@ -182,9 +213,70 @@ export default async function DashboardPage() {
         </section>
       </div>
 
-      <section className="mt-8">
+      <section
+        className="reveal mt-4 rounded-2xl border border-line bg-surface p-5 shadow-card"
+        style={{ animationDelay: "210ms" }}
+      >
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-muted">Recent Activities</h2>
+          <div className="flex items-center gap-2 text-sm font-medium text-muted">
+            <Scale className="h-4 w-4" strokeWidth={2.5} />
+            Body Weight
+          </div>
+          {latestWeighIn ? (
+            <Link
+              href="/dashboard/body"
+              className="flex items-center gap-1 text-sm font-medium text-accent2 hover:underline"
+            >
+              View trend <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          ) : null}
+        </div>
+        {latestWeighIn ? (
+          <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div>
+              <dt className="text-xs text-muted">Latest · {formatDate(latestWeighIn.measuredAt)}</dt>
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
+                {(latestWeighIn.weightKg * LB_PER_KG).toFixed(1)} lb
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">7-day avg</dt>
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
+                {thisWeekAvgLb != null ? `${thisWeekAvgLb.toFixed(1)} lb` : "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">vs prior week</dt>
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
+                {weeklyChangeLb != null
+                  ? `${weeklyChangeLb >= 0 ? "+" : ""}${weeklyChangeLb.toFixed(1)} lb`
+                  : "—"}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Body fat</dt>
+              <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
+                {latestWeighIn.bodyFatPct != null ? `${latestWeighIn.bodyFatPct.toFixed(1)}%` : "—"}
+              </dd>
+            </div>
+          </dl>
+        ) : !renphoAccount ? (
+          <div className="mt-3">
+            <p className="text-sm text-muted">
+              Connect Renpho in Settings to track weigh-ins and body composition here.
+            </p>
+            <Link href="/settings" className="mt-2 inline-block text-sm font-medium text-accent2 hover:underline">
+              Go to Settings
+            </Link>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted">No weigh-ins synced in the last 14 days.</p>
+        )}
+      </section>
+
+      <section className="reveal mt-8" style={{ animationDelay: "240ms" }}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold tracking-wide text-muted uppercase">Recent Activities</h2>
           <Link
             href="/dashboard/activities"
             className="flex items-center gap-1 text-sm font-medium text-accent2 hover:underline"

@@ -332,17 +332,37 @@ export type ExerciseTemplateWritePayload = {
   equipment?: string;
 };
 
+// The write shape differs from the read DTO: Hevy expects the body under
+// `exercise` with exercise_type / equipment_category / muscle_group /
+// other_muscles, and responds with only the new template's id (a bare
+// string), so the returned DTO is rebuilt from the payload.
 export async function createExerciseTemplateInHevy(
   payload: ExerciseTemplateWritePayload
 ): Promise<HevyExerciseTemplateDto> {
-  const result = await hevyFetch<{ exercise_template: HevyExerciseTemplateDto }>(
-    "/exercise_templates",
-    {
-      method: "POST",
-      body: JSON.stringify({ exercise_template: payload }),
-    }
-  );
-  return result.exercise_template;
+  const equipment = payload.equipment ?? "none";
+  const secondary = payload.secondary_muscle_groups ?? [];
+  const result = await hevyFetch<string | { id: string }>("/exercise_templates", {
+    method: "POST",
+    body: JSON.stringify({
+      exercise: {
+        title: payload.title,
+        exercise_type: payload.type,
+        equipment_category: equipment,
+        muscle_group: payload.primary_muscle_group,
+        other_muscles: secondary,
+      },
+    }),
+  });
+  const id = typeof result === "string" ? result : result.id;
+  return {
+    id,
+    title: payload.title,
+    type: payload.type,
+    primary_muscle_group: payload.primary_muscle_group,
+    secondary_muscle_groups: secondary,
+    equipment,
+    is_custom: true,
+  };
 }
 
 // ---------------------------------------------------------------------------

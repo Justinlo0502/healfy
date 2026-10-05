@@ -1,0 +1,43 @@
+# diagram.config.yaml
+#
+# Part 1 ("project") describes YOUR codebase. The scripts ignore it; the Cursor agent reads it
+# to know where blocks come from. Fill it in by pasting docs/diagrams/CURSOR_SETUP_PROMPT.md
+# into Cursor, or edit by hand. Everything marked <...> is a placeholder.
+#
+# Part 2 (drawio_cli, layout, limits) is read by build_diagram.py / lint_diagram.py.
+# The defaults are sensible; change them only if diagrams look cramped or too wide.
+#
+# Environment variables: none required. Optional: DRAWIO_CLI overrides `drawio_cli`.
+
+project:
+  name: "Healfy"
+  description: "Personal health/training dashboard (Next.js 16 + Prisma/Postgres) syncing Strava, Garmin, Hevy and coached by Claude"
+  top_level: "src/app (Next.js App Router)"
+  source_roots: ["src", "prisma", "mcp-server", "vercel.json"]
+  include_globs: ["src/**/*.ts", "src/**/*.tsx", "prisma/*.ts", "mcp-server/*.ts", "vercel.json"]
+  exclude_globs: ["**/test/**", "**/tests/**", "**/tb/**", "**/node_modules/**", "**/build/**", "**/.git/**", "**/.agents/**", "garmin-poc/**"]
+  block_definition: "one deployable/runtime unit (Vercel stage, route group, lib module, or external service)"
+  connection_definition: "HTTP call, git push/webhook, env-var injection, DB connection, cron trigger"
+  interface_naming: "HTTPS, git push, GitHub webhook, Vercel Cron GET + Bearer CRON_SECRET, Prisma/pg (DATABASE_URL), Strava OAuth/webhook, Anthropic API"
+  notes: "Deployment topic: GitHub -> Vercel build (npm install runs prisma generate, next build) -> serverless functions + CDN, crons from vercel.json, Postgres via DATABASE_URL. UNSURE: Neon vs Supabase (README allows either); git-integration vs CLI deploy; whether production uses GARMIN_SIDECAR_URL (dev only)."
+
+drawio_cli: drawio                       # or a full path, e.g. "C:/Program Files/draw.io/draw.io.exe"
+                                         # macOS: /Applications/draw.io.app/Contents/MacOS/draw.io
+
+layout:
+  direction: RIGHT                       # RIGHT | DOWN | LEFT | UP (main flow direction)
+  node_spacing: 60                       # min gap between blocks in the same layer (px)
+  layer_spacing: 90                      # gap between columns/layers (px); raise it if edge labels feel cramped
+  container_padding: 40                  # inside padding of containers (px)
+  container_title_height: 50             # room at the top of containers for the title (px)
+  grid: 10
+  min_block_width: 120
+  min_block_height: 60
+  char_width: 7.0                        # estimated px per character (raise if labels overflow in draw.io)
+  line_height: 16
+  max_chars_per_line: 18                 # block labels wrap at this many characters
+
+limits:
+  max_blocks_per_page: 12
+  max_block_label: 24
+  max_connection_label: 20

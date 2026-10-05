@@ -1,0 +1,9 @@
+{
+  "name": "block-diagram-kit",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ELK layout helper for build_diagram.py",
+  "dependencies": {
+    "elkjs": "^0.12.0"
+  }
+}

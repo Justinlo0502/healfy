@@ -16,13 +16,13 @@ A single-athlete training dashboard and AI coach. Pulls activities from Strava, 
 npm install
 cp .env.example .env   # already done in this repo's dev copy — fill in real values as you get them
 npx prisma migrate dev
-npm run seed            # creates your login + realistic mock training history
+npm run seed            # creates your login only — no data
 npm run dev
 ```
 
 Log in at `http://localhost:3000/login` with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set in `.env`.
 
-The seed script gives you a fully populated dashboard (8 weeks of mock runs, HR zones, ACWR, aerobic efficiency trend) without needing Strava or Garmin connected yet — useful for checking the UI works before wiring up real accounts.
+The seed script only creates your login. It never writes fake activities or metrics — the dashboard stays empty until you connect Garmin (Settings → Connect Garmin) and sync.
 
 ## Connecting your real accounts
 

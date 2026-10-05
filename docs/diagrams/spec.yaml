@@ -1,0 +1,98 @@
+# Healfy on Vercel: deployment pipeline, runtime, env vars, cron jobs.
+pages:
+  - name: Deploy Pipeline
+    blocks:
+      - {id: dev,        label: "Developer",              type: io}
+      - {id: github,     label: "GitHub repo\nhealfy",    type: external}
+      - {id: vercel,     label: "Vercel Project: healfy", type: container, source_file: .vercel/project.json}
+      - {id: install,    label: "1. Install\nprisma gen", parent: vercel, type: module, source_file: package.json}
+      - {id: build,      label: "2. next build",         parent: vercel, type: module, source_file: next.config.ts}
+      - {id: deploy,     label: "3. Deployment\n(live)", parent: vercel, type: module}
+      - {id: env,        label: "Project Env Vars",      parent: vercel, type: module, source_file: .env.example}
+      - {id: cron_cfg,   label: "vercel.json\ncrons", parent: vercel, type: module, source_file: vercel.json}
+      - {id: prod_url,   label: "Production URL", type: io}
+      - {id: migrate,    label: "DB setup\nmigrate + seed", type: module, source_file: README.md}
+      - {id: db,         label: "Postgres\n(DATABASE_URL)", type: memory, source_file: prisma/schema.prisma}
+    connections:
+      - {from: dev,      to: github,   label: "git push"}
+      - {from: github,   to: install,  label: "push webhook", kind: control}
+      - {from: install,  to: build,    label: "Prisma client"}
+      - {from: env,      to: build,    label: "build-time env", kind: control}
+      - {from: build,    to: deploy,   label: ".next output"}
+      - {from: cron_cfg, to: deploy,   label: "registers crons", kind: control}
+      - {from: deploy,   to: prod_url, label: "HTTPS"}
+      - {from: dev,      to: migrate,  label: "vercel env pull", kind: control, style: dashed}
+      - {from: migrate,  to: db,       label: "prisma migrate"}
+
+  - name: Runtime on Vercel
+    blocks:
+      - {id: browser,    label: "Browser (you)",         type: io}
+      - {id: vercel,     label: "Vercel Platform",       type: container}
+      - {id: edge,       label: "Edge Network\n+ CDN",   parent: vercel, type: module}
+      - {id: proxy,      label: "proxy.ts\nsession check", parent: vercel, type: module, source_file: src/proxy.ts}
+      - {id: pages,      label: "Dashboard\nPages (RSC)", parent: vercel, type: module, source_file: src/app/dashboard}
+      - {id: api,        label: "API Routes\n(serverless)", parent: vercel, type: module, source_file: src/app/api}
+      - {id: cron,       label: "Vercel Cron",           parent: vercel, type: module, source_file: vercel.json}
+      - {id: db,         label: "Postgres",              type: memory, source_file: src/lib/db.ts}
+      - {id: strava,     label: "Strava API",            type: external, source_file: src/lib/strava.ts}
+      - {id: garmin,     label: "Garmin Connect",        type: external, source_file: src/lib/garmin.ts}
+      - {id: hevy,       label: "Hevy API",              type: external, source_file: src/lib/hevy.ts}
+      - {id: anthropic,  label: "Anthropic API",         type: external, source_file: src/app/api/chat/route.ts}
+    connections:
+      - {from: browser,  to: edge,     label: "HTTPS"}
+      - {from: edge,     to: proxy,    label: "matched paths"}
+      - {from: proxy,    to: pages,    label: "valid JWT cookie"}
+      - {from: proxy,    to: api,      label: "valid JWT cookie"}
+      - {from: cron,     to: api,      label: "GET + CRON_SECRET", kind: control}
+      - {from: strava,   to: api,      label: "webhook", kind: control}
+      - {from: pages,    to: db,       label: "Prisma / pg"}
+      - {from: api,      to: db,       label: "Prisma / pg"}
+      - {from: api,      to: strava,   label: "OAuth + REST"}
+      - {from: api,      to: garmin,   label: "garmin-connect"}
+      - {from: api,      to: hevy,     label: "REST + api-key"}
+      - {from: api,      to: anthropic, label: "Messages API"}
+
+  - name: Env Vars
+    blocks:
+      - {id: e_db,       label: "DATABASE_URL",          type: io, source_file: src/lib/db.ts}
+      - {id: e_session,  label: "SESSION_SECRET",        type: io, source_file: src/lib/auth.ts}
+      - {id: e_enc,      label: "ENCRYPTION_KEY",        type: io, source_file: src/lib/crypto.ts}
+      - {id: e_cron,     label: "CRON_SECRET",           type: io, source_file: src/app/api/sync/route.ts}
+      - {id: e_strava,   label: "STRAVA_*\n(id/secret/URI)", type: io, source_file: src/lib/strava.ts}
+      - {id: e_ai,       label: "ANTHROPIC_API_KEY",     type: io, source_file: src/app/api/chat/route.ts}
+      - {id: db_ts,      label: "lib/db.ts",             type: module, source_file: src/lib/db.ts}
+      - {id: auth_ts,    label: "lib/auth.ts\nproxy.ts", type: module, source_file: src/proxy.ts}
+      - {id: crypto_ts,  label: "lib/crypto.ts",         type: module, source_file: src/lib/crypto.ts}
+      - {id: sync_api,   label: "api/sync/*",            type: module, source_file: src/app/api/sync/route.ts}
+      - {id: strava_ts,  label: "lib/strava.ts",         type: module, source_file: src/lib/strava.ts}
+      - {id: chat_api,   label: "api/chat routes",       type: module, source_file: src/app/api/chat/route.ts}
+    connections:
+      - {from: e_db,      to: db_ts,     label: "pg connection"}
+      - {from: e_session, to: auth_ts,   label: "JWT sign/verify"}
+      - {from: e_enc,     to: crypto_ts, label: "encrypt tokens"}
+      - {from: e_cron,    to: sync_api,  label: "Bearer check", kind: control}
+      - {from: e_strava,  to: strava_ts, label: "OAuth app creds"}
+      - {from: e_ai,      to: chat_api,  label: "API key"}
+
+  - name: Cron Jobs
+    blocks:
+      - {id: vjson,      label: "vercel.json\ncrons[]",  type: module, source_file: vercel.json}
+      - {id: vcron,      label: "Vercel Cron\n(UTC)",    type: module}
+      - {id: c_sync,     label: "03:00 /api/sync",       type: module, source_file: src/app/api/sync/route.ts}
+      - {id: c_garmin,   label: "03:10 /api/sync/garmin", type: module, source_file: src/app/api/sync/garmin/route.ts}
+      - {id: c_hevy,     label: "03:20 /api/sync/hevy",  type: module, source_file: src/app/api/sync/hevy/route.ts}
+      - {id: strava,     label: "Strava API",            type: external, source_file: src/lib/strava.ts}
+      - {id: garmin,     label: "Garmin Connect",        type: external, source_file: src/lib/garmin.ts}
+      - {id: hevy,       label: "Hevy API",              type: external, source_file: src/lib/hevy.ts}
+      - {id: db,         label: "Postgres",              type: memory, source_file: src/lib/db.ts}
+    connections:
+      - {from: vjson,    to: vcron,    label: "registers 3 crons", kind: control}
+      - {from: vcron,    to: c_sync,   label: "0 3 * * *", kind: control}
+      - {from: vcron,    to: c_garmin, label: "10 3 * * *", kind: control}
+      - {from: vcron,    to: c_hevy,   label: "20 3 * * *", kind: control}
+      - {from: c_sync,   to: strava,   label: "syncStrava"}
+      - {from: c_garmin, to: garmin,   label: "syncGarmin"}
+      - {from: c_hevy,   to: hevy,     label: "syncHevy"}
+      - {from: c_sync,   to: db,       label: "upsert"}
+      - {from: c_garmin, to: db,       label: "upsert"}
+      - {from: c_hevy,   to: db,       label: "upsert"}

@@ -1,0 +1,363 @@
+<mxfile host="app.diagrams.net" agent="block-diagram-kit" version="24.0.0">
+  <diagram id="page_1_deploy_pipeline" name="Deploy Pipeline">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" math="0" shadow="0" dx="1990" dy="420" pageWidth="2030" pageHeight="460">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="dev" value="Developer" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="170" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="github" value="GitHub repo&lt;br&gt;healfy" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="160" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vercel" value="Vercel Project: healfy" style="rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=13;strokeColor=#9aa0a6;fillColor=#f8f9fa;" vertex="1" parent="1">
+          <mxGeometry x="840" y="20" width="750" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="prod_url" value="Production URL" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1820" y="140" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="migrate" value="DB setup&lt;br&gt;migrate + seed" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="320" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="Postgres&lt;br&gt;(DATABASE_URL)" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="840" y="320" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="install" value="1. Install&lt;br&gt;prisma gen" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="50" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="build" value="2. next build" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="320" y="130" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="deploy" value="3. Deployment&lt;br&gt;(live)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="590" y="120" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="env" value="Project Env Vars" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="40" y="60" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cron_cfg" value="vercel.json&lt;br&gt;crons" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="320" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="dev__github__1" value="git push" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.3333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dev" target="github">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="github__install__1" value="push webhook" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="github" target="install">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="install__build__1" value="Prisma client" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.6667;entryDx=0;entryDy=0;" edge="1" parent="1" source="install" target="build">
+          <mxGeometry relative="1" as="geometry" x="-0.07" />
+        </mxCell>
+        <mxCell id="env__build__1" value="build-time env" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.3333;entryDx=0;entryDy=0;" edge="1" parent="1" source="env" target="build">
+          <mxGeometry relative="1" as="geometry" x="-0.3">
+            <Array as="points">
+              <mxPoint x="1150" y="110" />
+              <mxPoint x="1150" y="170" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="build__deploy__1" value=".next output" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.6667;entryDx=0;entryDy=0;" edge="1" parent="1" source="build" target="deploy">
+          <mxGeometry relative="1" as="geometry" x="-0.07" />
+        </mxCell>
+        <mxCell id="cron_cfg__deploy__1" value="registers crons" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.3333;entryDx=0;entryDy=0;" edge="1" parent="1" source="cron_cfg" target="deploy">
+          <mxGeometry relative="1" as="geometry" x="-0.24">
+            <Array as="points">
+              <mxPoint x="1420" y="100" />
+              <mxPoint x="1420" y="160" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="deploy__prod_url__1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="deploy" target="prod_url">
+          <mxGeometry relative="1" as="geometry" x="0.04" />
+        </mxCell>
+        <mxCell id="dev__migrate__1" value="vercel env pull" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;dashed=1;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="dev" target="migrate">
+          <mxGeometry relative="1" as="geometry" x="0.07">
+            <Array as="points">
+              <mxPoint x="170" y="210" />
+              <mxPoint x="170" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="migrate__db__1" value="prisma migrate" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="migrate" target="db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page_2_runtime_on_vercel" name="Runtime on Vercel">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" math="0" shadow="0" dx="1640" dy="490" pageWidth="1680" pageHeight="530">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="browser" value="Browser (you)" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vercel" value="Vercel Platform" style="rounded=1;arcSize=2;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;fontSize=13;strokeColor=#9aa0a6;fillColor=#f8f9fa;" vertex="1" parent="1">
+          <mxGeometry x="440" y="20" width="740" height="260" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="Postgres" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1470" y="30" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="strava" value="Strava API" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="50" y="200" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="garmin" value="Garmin Connect" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1470" y="150" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hevy" value="Hevy API" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1470" y="270" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="anthropic" value="Anthropic API" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1470" y="390" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="edge" value="Edge Network&lt;br&gt;+ CDN" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="40" y="60" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="proxy" value="proxy.ts&lt;br&gt;session check" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="300" y="60" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="pages" value="Dashboard&lt;br&gt;Pages (RSC)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="580" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="api" value="API Routes&lt;br&gt;(serverless)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="580" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="cron" value="Vercel Cron" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="vercel">
+          <mxGeometry x="300" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="browser__edge__1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="browser" target="edge">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="edge__proxy__1" value="matched paths" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="edge" target="proxy">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="proxy__pages__1" value="valid JWT cookie" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.3333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="proxy" target="pages">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="proxy__api__1" value="valid JWT cookie" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.3333;entryDx=0;entryDy=0;" edge="1" parent="1" source="proxy" target="api">
+          <mxGeometry relative="1" as="geometry" x="-0.09">
+            <Array as="points">
+              <mxPoint x="870" y="120" />
+              <mxPoint x="870" y="130" />
+              <mxPoint x="1010" y="130" />
+              <mxPoint x="1010" y="180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="cron__api__1" value="GET + CRON_SECRET" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="cron" target="api">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="strava__api__1" value="webhook" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.8333;entryDx=0;entryDy=0;" edge="1" parent="1" source="strava" target="api">
+          <mxGeometry relative="1" as="geometry" x="-0.01">
+            <Array as="points">
+              <mxPoint x="1010" y="230" />
+              <mxPoint x="1010" y="210" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pages__db__1" value="Prisma / pg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.3333;entryDx=0;entryDy=0;" edge="1" parent="1" source="pages" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1210" y="100" />
+              <mxPoint x="1210" y="50" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="api__db__1" value="Prisma / pg" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.1667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.6667;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="db">
+          <mxGeometry relative="1" as="geometry" x="0.12">
+            <Array as="points">
+              <mxPoint x="1230" y="170" />
+              <mxPoint x="1230" y="70" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="api__strava__1" value="OAuth + REST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.8333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="strava">
+          <mxGeometry relative="1" as="geometry" x="-0.01">
+            <Array as="points">
+              <mxPoint x="1210" y="210" />
+              <mxPoint x="1210" y="300" />
+              <mxPoint x="20" y="300" />
+              <mxPoint x="20" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="api__garmin__1" value="garmin-connect" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.3333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="garmin">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="api__hevy__1" value="REST + api-key" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="hevy">
+          <mxGeometry relative="1" as="geometry" x="-0.09">
+            <Array as="points">
+              <mxPoint x="1250" y="190" />
+              <mxPoint x="1250" y="300" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="api__anthropic__1" value="Messages API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="api" target="anthropic">
+          <mxGeometry relative="1" as="geometry" x="0.02">
+            <Array as="points">
+              <mxPoint x="1230" y="200" />
+              <mxPoint x="1230" y="420" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page_3_env_vars" name="Env Vars">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" math="0" shadow="0" dx="630" dy="720" pageWidth="670" pageHeight="760">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="e_db" value="DATABASE_URL" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="50" y="20" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_session" value="SESSION_SECRET" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="140" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_enc" value="ENCRYPTION_KEY" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_cron" value="CRON_SECRET" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="50" y="380" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_strava" value="STRAVA_*&lt;br&gt;(id/secret/URI)" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="500" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ai" value="ANTHROPIC_API_KEY" style="rounded=1;arcSize=40;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="620" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db_ts" value="lib/db.ts" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="20" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="auth_ts" value="lib/auth.ts&lt;br&gt;proxy.ts" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="140" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="crypto_ts" value="lib/crypto.ts" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="260" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sync_api" value="api/sync/*" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="380" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="strava_ts" value="lib/strava.ts" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="500" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="chat_api" value="api/chat routes" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="460" y="620" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_db__db_ts__1" value="pg connection" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_db" target="db_ts">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="e_session__auth_ts__1" value="JWT sign/verify" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_session" target="auth_ts">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="e_enc__crypto_ts__1" value="encrypt tokens" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_enc" target="crypto_ts">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="e_cron__sync_api__1" value="Bearer check" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_cron" target="sync_api">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="e_strava__strava_ts__1" value="OAuth app creds" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_strava" target="strava_ts">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+        <mxCell id="e_ai__chat_api__1" value="API key" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="e_ai" target="chat_api">
+          <mxGeometry relative="1" as="geometry" x="-0.03" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="page_4_cron_jobs" name="Cron Jobs">
+    <mxGraphModel grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" math="0" shadow="0" dx="1380" dy="480" pageWidth="1420" pageHeight="520">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="vjson" value="vercel.json&lt;br&gt;crons[]" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="20" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vcron" value="Vercel Cron&lt;br&gt;(UTC)" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="440" y="50" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_sync" value="03:00 /api/sync" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="30" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_garmin" value="03:10&lt;br&gt;/api/sync/garmin" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="150" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_hevy" value="03:20&lt;br&gt;/api/sync/hevy" style="rounded=1;arcSize=8;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="820" y="310" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="strava" value="Strava API" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="20" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="garmin" value="Garmin Connect" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="140" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hevy" value="Hevy API" style="rounded=0;whiteSpace=wrap;html=1;dashed=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="380" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="db" value="Postgres" style="shape=cylinder3;boundedLbl=1;backgroundOutline=1;size=10;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="260" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="vjson__vcron__1" value="registers 3 crons" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="vjson" target="vcron">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vcron__c_sync__1" value="0 3 * * *" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.1667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="vcron" target="c_sync">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="vcron__c_garmin__1" value="10 3 * * *" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="vcron" target="c_garmin">
+          <mxGeometry relative="1" as="geometry" x="0.11">
+            <Array as="points">
+              <mxPoint x="610" y="80" />
+              <mxPoint x="610" y="180" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="vcron__c_hevy__1" value="20 3 * * *" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=1;dashed=1;endArrow=open;endFill=0;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="vcron" target="c_hevy">
+          <mxGeometry relative="1" as="geometry" x="0.02">
+            <Array as="points">
+              <mxPoint x="590" y="90" />
+              <mxPoint x="590" y="340" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_sync__strava__1" value="syncStrava" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.3333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_sync" target="strava">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c_garmin__garmin__1" value="syncGarmin" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.3333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_garmin" target="garmin">
+          <mxGeometry relative="1" as="geometry" x="-0.04" />
+        </mxCell>
+        <mxCell id="c_hevy__hevy__1" value="syncHevy" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_hevy" target="hevy">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="990" y="350" />
+              <mxPoint x="990" y="410" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_sync__db__1" value="upsert" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.3333;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_sync" target="db">
+          <mxGeometry relative="1" as="geometry" x="0.02">
+            <Array as="points">
+              <mxPoint x="1010" y="70" />
+              <mxPoint x="1010" y="210" />
+              <mxPoint x="1150" y="210" />
+              <mxPoint x="1150" y="280" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_garmin__db__1" value="upsert" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.6667;exitDx=0;exitDy=0;entryX=0.0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_garmin" target="db">
+          <mxGeometry relative="1" as="geometry" x="0.03">
+            <Array as="points">
+              <mxPoint x="990" y="190" />
+              <mxPoint x="990" y="290" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="c_hevy__db__1" value="upsert" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;labelBackgroundColor=#ffffff;fontSize=11;strokeColor=#333333;strokeWidth=2;endArrow=block;endFill=1;exitX=1.0;exitY=0.3333;exitDx=0;exitDy=0;entryX=0.0;entryY=0.8333;entryDx=0;entryDy=0;" edge="1" parent="1" source="c_hevy" target="db">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1150" y="330" />
+              <mxPoint x="1150" y="310" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

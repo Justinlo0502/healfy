@@ -1,0 +1,12 @@
+import "../../mcp-server/env.ts";
+import { db } from "../../src/lib/db.ts";
+const a = await db.athlete.findFirst();
+const want = ["Cat-Camel","Thread the Needle","90/90s","Bird Dog","Glute Bridge","Lat Pulldown (Cable)","Seated Leg Curl (Machine)","Leg Extension (Machine)","Hip Thrust (Barbell)","Seated Cable Row - Bar Grip","Dead Bug","Side Plank","Cable Core Pallof Press","Face Pull","Hip Abduction (Machine)","Hip Adduction (Machine)"];
+const t = await db.hevyExerciseTemplate.findMany({ where: { title: { in: want } } as any });
+for (const x of t as any[]) console.log("TPL", x.title, "|", x.hevyTemplateId ?? x.hevyExerciseTemplateId ?? x.templateId, "|", x.type);
+console.log("TPLKEYS", t[0] ? Object.keys(t[0]).join(",") : "none", "missing:", want.filter(w => !t.some((x: any) => x.title === w)).join(", "));
+const ws = await db.hevyWorkout.findMany({ where: { athleteId: a!.id } as any, orderBy: { startTime: "desc" } as any, take: 15 });
+for (const w of ws as any[]) for (const e of (w.exercises ?? []) as any[]) if (want.includes(e.title) || /Leg|Pulldown|Row|Thrust/.test(e.title)) console.log("HIST", w.startTime.toISOString().slice(0,10), e.title, JSON.stringify(e.sets.map((s: any) => `${s.weight_kg ?? "-"}x${s.reps ?? s.duration_seconds + "s"}`)));
+const r: any = await db.hevyRoutine.findFirst({ where: { title: "W1 Fri · Heavy pull + hinge" } as any });
+for (const e of r.exercises as any[]) console.log("W1FRI", e.title, e.rest_seconds, JSON.stringify(e.sets.map((s: any) => `${s.type}:${s.weight_kg ?? "-"}x${s.reps ?? s.duration_seconds + "s"}`)), e.notes ?? "");
+await db.$disconnect();

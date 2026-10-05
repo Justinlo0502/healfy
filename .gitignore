@@ -49,3 +49,6 @@ next-env.d.ts
 # fetched exercise photos (scripts/fetch-exercise-photos.ts) — regenerable,
 # depends on the account's own lift history
 /public/hevy-photos/
+
+.vercel
+.env*

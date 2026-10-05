@@ -1,0 +1,40 @@
+# Example spec: a small SoC-style system. Replace with a spec extracted from your code.
+# Rules: stable snake_case ids, max 12 blocks per page, every connection labelled.
+pages:
+  - name: Top Level
+    blocks:
+      - {id: soc,        label: "SoC Subsystem",       type: container}
+      - {id: cpu,        label: "CPU Core",            parent: soc, type: module,   source_file: src/cpu.sv}
+      - {id: bus,        label: "AXI Interconnect",    parent: soc, type: module,   source_file: src/axi_xbar.sv}
+      - {id: periph,     label: "Peripherals",         parent: soc, type: container}
+      - {id: uart,       label: "UART",                parent: periph, type: module, source_file: src/uart.sv}
+      - {id: gpio,       label: "GPIO",                parent: periph, type: module, source_file: src/gpio.sv}
+      - {id: ddr_ctrl,   label: "DDR Controller",      type: module,   source_file: src/ddr_ctrl.sv}
+      - {id: ddr,        label: "DDR4 Memory",         type: memory}
+      - {id: host_if,    label: "Host Interface",      type: io}
+      - {id: clk_gen,    label: "Clock and Reset Gen", type: module,   source_file: src/clk_gen.sv}
+    connections:
+      - {from: host_if,  to: cpu,       label: "AXI4-Lite",  kind: control}
+      - {from: cpu,      to: bus,       label: "AXI4",       kind: data, bidirectional: true}
+      - {from: bus,      to: uart,      label: "APB",        kind: control}
+      - {from: bus,      to: gpio,      label: "APB",        kind: control}
+      - {from: bus,      to: ddr_ctrl,  label: "AXI4",       kind: data, bidirectional: true}
+      - {from: ddr_ctrl, to: ddr,       label: "DDR4 PHY",   kind: data, bidirectional: true}
+      - {from: clk_gen,  to: soc,       label: "clk",        kind: clock}
+      - {from: clk_gen,  to: ddr_ctrl,  label: "ddr_clk",    kind: clock}
+      - {from: clk_gen,  to: soc,       label: "rst_n",      kind: reset}
+
+  - name: Peripherals
+    blocks:
+      - {id: apb_bridge, label: "APB Bridge",   type: module, source_file: src/apb_bridge.sv}
+      - {id: uart,       label: "UART",         type: module, source_file: src/uart.sv}
+      - {id: gpio,       label: "GPIO",         type: module, source_file: src/gpio.sv}
+      - {id: irq_ctrl,   label: "IRQ Controller", type: module, source_file: src/irq.sv}
+      - {id: pads,       label: "Pad Ring",     type: io}
+    connections:
+      - {from: apb_bridge, to: uart,     label: "APB",   kind: control}
+      - {from: apb_bridge, to: gpio,     label: "APB",   kind: control}
+      - {from: uart,       to: irq_ctrl, label: "irq",   kind: control}
+      - {from: gpio,       to: irq_ctrl, label: "irq",   kind: control}
+      - {from: uart,       to: pads,     label: "TX/RX", kind: data}
+      - {from: gpio,       to: pads,     label: "pins",  kind: data}

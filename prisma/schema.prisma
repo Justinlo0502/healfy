@@ -14,8 +14,8 @@ datasource db {
 // row (instead of a global singleton) keeps the schema honest and makes a
 // future multi-athlete version a non-rewrite.
 model Athlete {
-  id           String   @id @default(cuid())
-  email        String   @unique
+  id           String  @id @default(cuid())
+  email        String  @unique
   passwordHash String
   displayName  String?
 
@@ -30,6 +30,7 @@ model Athlete {
   stravaAccount   StravaAccount?
   garminAccount   GarminAccount?
   hevyAccount     HevyAccount?
+  renphoAccount   RenphoAccount?
   activities      Activity[]
   dailyMetrics    DailyMetric[]
   plannedWorkouts PlannedWorkout[]
@@ -40,20 +41,22 @@ model Athlete {
   hevyExerciseTemplates HevyExerciseTemplate[]
   hevyWorkouts          HevyWorkout[]
   hevyBodyMeasurements  HevyBodyMeasurement[]
+
+  renphoMeasurements RenphoMeasurement[]
 }
 
 model StravaAccount {
-  id            String   @id @default(cuid())
-  athleteId     String   @unique
-  athlete       Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  athleteId String  @unique
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   stravaAthleteId String   @unique
   accessToken     String
   refreshToken    String
   expiresAt       DateTime
 
-  webhookVerified Boolean  @default(false)
-  connectedAt     DateTime @default(now())
+  webhookVerified Boolean   @default(false)
+  connectedAt     DateTime  @default(now())
   lastSyncedAt    DateTime?
 }
 
@@ -81,20 +84,20 @@ model Activity {
   athleteId String
   athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
-  source         ActivitySource
-  stravaId       String? @unique
-  garminId       String? @unique
+  source   ActivitySource
+  stravaId String?        @unique
+  garminId String?        @unique
 
-  name          String
-  type          String // Run, Ride, etc.
-  startTime     DateTime
-  movingTimeSec Int
-  distanceMeters Float
+  name                String
+  type                String // Run, Ride, etc.
+  startTime           DateTime
+  movingTimeSec       Int
+  distanceMeters      Float
   elevationGainMeters Float?
   elevationLossMeters Float?
 
-  avgHR Int?
-  maxHR Int?
+  avgHR           Int?
+  maxHR           Int?
   avgPaceSecPerKm Float?
 
   // Weather at activity time (Garmin sidecar only; null for Strava-sourced
@@ -109,9 +112,9 @@ model Activity {
 
   // Derived, precomputed by the insight engine on sync so the dashboard
   // never recomputes on every page load.
-  trainingLoad     Float?
+  trainingLoad      Float?
   aerobicEfficiency Float? // meters per beat-minute on the run
-  hrDriftPct       Float?
+  hrDriftPct        Float?
 
   plannedWorkout PlannedWorkout?
 
@@ -128,12 +131,12 @@ model DailyMetric {
   athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
   date      DateTime
 
-  bodyBattery        Int?
-  hrvStatus          String? // BALANCED, UNBALANCED, LOW, etc.
-  hrvMs              Int?
-  restingHR          Int?
-  sleepScore         Int?
-  trainingReadiness  Int?
+  bodyBattery       Int?
+  hrvStatus         String? // BALANCED, UNBALANCED, LOW, etc.
+  hrvMs             Int?
+  restingHR         Int?
+  sleepScore        Int?
+  trainingReadiness Int?
 
   createdAt DateTime @default(now())
 
@@ -144,9 +147,9 @@ model DailyMetric {
 // Garmin) — target pace/HR per interval — matched against the Activity that
 // fulfilled it so we can show plan vs. actual.
 model PlannedWorkout {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   athleteId String
-  athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   garminWorkoutId String   @unique
   name            String
@@ -160,9 +163,9 @@ model PlannedWorkout {
 }
 
 model ChatMessage {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   athleteId String
-  athlete   Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   role      String // user | assistant
   content   String
@@ -288,4 +291,49 @@ model HevyBodyMeasurement {
   createdAt DateTime @default(now())
 
   @@index([athleteId, date])
+}
+
+// Renpho smart scale, via the unofficial Renpho Health cloud API
+// (cloud.renpho.com). Like Hevy, auth is server-side env credentials
+// (RENPHO_EMAIL / RENPHO_PASSWORD) — this row only records that the athlete
+// connected it.
+model RenphoAccount {
+  id        String  @id @default(cuid())
+  athleteId String  @unique
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  connectedAt  DateTime  @default(now())
+  lastSyncedAt DateTime?
+}
+
+// One weigh-in from the scale. Observed against live data: weight/bone/
+// muscle mass/fat-free weight in kg, fat/water/skeletal muscle in %, where
+// muscle mass (Renpho's `sinew`) = fat-free weight - bone. Fields the scale didn't measure (e.g. no bioimpedance
+// contact) come back null/0 and are stored as null.
+model RenphoMeasurement {
+  id        String  @id @default(cuid())
+  athleteId String
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  // Renpho ids are 64-bit integers — kept as strings to avoid JS precision loss.
+  renphoMeasurementId String   @unique
+  measuredAt          DateTime
+  weightKg            Float
+  bmi                 Float?
+  bodyFatPct          Float?
+  skeletalMusclePct   Float?
+  muscleMassKg        Float?
+  waterPct            Float?
+  boneMassKg          Float?
+  visceralFat         Float?
+  bmrKcal             Float?
+  metabolicAge        Int?
+  fatFreeWeightKg     Float?
+
+  // Full decrypted record as returned by Renpho, for fields not broken out above.
+  raw Json
+
+  createdAt DateTime @default(now())
+
+  @@index([athleteId, measuredAt])
 }

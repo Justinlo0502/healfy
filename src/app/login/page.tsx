@@ -2,7 +2,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Activity } from "lucide-react";
+import { Mountain } from "lucide-react";
 
 function LoginForm() {
   const router = useRouter();
@@ -39,11 +39,11 @@ function LoginForm() {
 
   return (
     <div className="flex flex-1 items-center justify-center px-4 py-16">
-      <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-card">
+      <div className="reveal w-full max-w-sm rounded-2xl border border-line bg-surface p-8 shadow-card">
         <div className="gradient-accent flex h-12 w-12 items-center justify-center rounded-2xl text-accent-foreground shadow-card">
-          <Activity className="h-6 w-6" strokeWidth={2.5} />
+          <Mountain className="h-6 w-6" strokeWidth={2.5} />
         </div>
-        <h1 className="mt-4 text-xl font-bold tracking-tight">Sign in to Healfy</h1>
+        <h1 className="mt-4 font-display text-2xl font-semibold italic tracking-tight">Sign in to Healfy</h1>
         <p className="mt-1 text-sm text-muted">Your training data, in one place.</p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">

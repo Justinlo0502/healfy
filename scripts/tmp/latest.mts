@@ -1,0 +1,14 @@
+import "../../mcp-server/env.ts";
+import { db } from "../../src/lib/db.ts";
+import { executeTool } from "../../src/lib/chat-tools.ts";
+import { syncGarminForAthlete } from "../../src/lib/garmin.ts";
+const a = await db.athlete.findFirst();
+console.log("SYNC", JSON.stringify(await syncGarminForAthlete(a!.id)));
+const r: any = await executeTool("get_recent_activities", { limit: 2 }, a!.id);
+console.log("RECENT", JSON.stringify(r));
+const act = await db.activity.findUnique({ where: { id: r.activities[0].id } });
+console.log("DETAIL", JSON.stringify(await executeTool("get_activity_detail", { activityId: r.activities[0].id }, a!.id)));
+const s: any = act?.streamData;
+console.log("STREAMKEYS", s ? JSON.stringify(Object.keys(Array.isArray(s) ? (s[0] ?? {}) : s)) : "none", Array.isArray(s) ? s.length : "");
+console.log("STREAMSAMPLE", JSON.stringify(Array.isArray(s) ? s.slice(0, 3) : s ? Object.fromEntries(Object.entries(s).map(([k, v]: any) => [k, Array.isArray(v) ? v.slice(0, 3) : v])) : null));
+await db.$disconnect();

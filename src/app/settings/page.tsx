@@ -5,16 +5,18 @@ import { formatDateTime } from "@/lib/format";
 import ProfileForm from "./ProfileForm";
 import GarminConnectForm from "./GarminConnectForm";
 import HevyConnectForm from "./HevyConnectForm";
-import { Settings as SettingsIcon, User, Waves, Watch, Dumbbell } from "lucide-react";
+import RenphoConnectForm from "./RenphoConnectForm";
+import { Settings as SettingsIcon, User, Waves, Watch, Dumbbell, Scale } from "lucide-react";
 
 export default async function SettingsPage() {
   const athlete = await requireAthlete();
   if (!athlete) redirect("/login");
 
-  const [stravaAccount, garminAccount, hevyAccount] = await Promise.all([
+  const [stravaAccount, garminAccount, hevyAccount, renphoAccount] = await Promise.all([
     db.stravaAccount.findUnique({ where: { athleteId: athlete.id } }),
     db.garminAccount.findUnique({ where: { athleteId: athlete.id } }),
     db.hevyAccount.findUnique({ where: { athleteId: athlete.id } }),
+    db.renphoAccount.findUnique({ where: { athleteId: athlete.id } }),
   ]);
 
   return (
@@ -90,6 +92,20 @@ export default async function SettingsPage() {
         <HevyConnectForm
           connected={Boolean(hevyAccount)}
           lastSyncedAt={hevyAccount?.lastSyncedAt ? formatDateTime(hevyAccount.lastSyncedAt) : null}
+        />
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-line bg-surface p-5 shadow-card">
+        <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+          <Scale className="h-4 w-4 text-muted" /> Renpho
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Pulls in weigh-ins and body composition from your Renpho smart scale via an unofficial
+          Renpho Health API.
+        </p>
+        <RenphoConnectForm
+          connected={Boolean(renphoAccount)}
+          lastSyncedAt={renphoAccount?.lastSyncedAt ? formatDateTime(renphoAccount.lastSyncedAt) : null}
         />
       </section>
     </main>

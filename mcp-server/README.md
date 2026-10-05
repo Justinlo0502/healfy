@@ -10,6 +10,14 @@ Desktop (covered by your Pro plan) instead of the API.
 
 ## Setup
 
+**Claude Code** (including a Telegram channel session) picks this up
+automatically from the repo's `.mcp.json` — approve the `healfy` server the
+first time `claude` starts in this folder. Reads `DATABASE_URL` etc. from the
+repo's `.env`. Besides the read tools there's `sync_garmin`, which pulls fresh
+Garmin data directly (no `npm run dev` needed).
+
+### Claude Desktop
+
 Nothing to install beyond what's already in the main `package.json`
 (`npm install` at the repo root covers it).
 

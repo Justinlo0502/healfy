@@ -1,0 +1,10 @@
+import "../../mcp-server/env.ts";
+import { db } from "../../src/lib/db.ts";
+const a = await db.athlete.findFirst();
+const folders = await db.hevyRoutineFolder.findMany({ where: { athleteId: a!.id } as any });
+console.log("FOLDERS", JSON.stringify(folders.map((f: any) => ({ id: f.id, title: f.title, hid: f.hevyFolderId ?? f.hevyId }))));
+const routines = await db.hevyRoutine.findMany({ where: { athleteId: a!.id } as any });
+for (const r of routines as any[]) console.log("ROUTINE", r.title, "| folder", r.folderId ?? r.hevyFolderId, "|", JSON.stringify((r.exercises ?? r.structure?.exercises ?? []).map?.((e: any) => e.title) ?? Object.keys(r)));
+const ws = await db.hevyWorkout.findMany({ where: { athleteId: a!.id } as any, orderBy: { startTime: "desc" } as any, take: 6 });
+for (const w of ws as any[]) console.log("WORKOUT", w.startTime?.toISOString?.(), w.title, "|", JSON.stringify((w.exercises ?? w.raw?.exercises ?? []).map?.((e: any) => `${e.title} x${e.sets?.length}`)));
+await db.$disconnect();
