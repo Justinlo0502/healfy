@@ -132,7 +132,7 @@ export default async function RunDetailPage({
           <h2 className="text-sm font-semibold text-muted">Aerobic Decoupling</h2>
           <p className="tabular-nums mt-2 text-2xl font-extrabold tracking-tight">
             {activity.hrDriftPct >= 0 ? "+" : ""}
-            {activity.hrDriftPct.toFixed(1)}% decoupling
+            {activity.hrDriftPct.toFixed(2)}% decoupling
           </p>
           <p className="mt-2 text-sm text-muted">
             This compares your speed-per-heartbeat in the first half of the run against the

@@ -206,8 +206,8 @@ export function liftStatTiles(workouts: HevyWorkoutRow[]): LiftStatTiles {
     totalWorkouts: workouts.length,
     workoutsThisYear,
     workoutsLast30Days,
-    totalHours: Math.round((totalHoursMs / 3_600_000) * 10) / 10,
-    totalVolumeKg: Math.round(totalVolumeKg),
+    totalHours: Math.round((totalHoursMs / 3_600_000) * 100) / 100,
+    totalVolumeKg,
   };
 }
 

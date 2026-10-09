@@ -218,6 +218,8 @@ ACTIVITY_TYPE_LABELS = {
     "open_water_swimming": "Swim",
     "strength_training": "Weight Training",
     "stand_up_paddleboarding_v2": "Stand Up Paddleboarding",
+    # Indoor rowing machine used as a paddle-training ("perging") ergometer.
+    "indoor_rowing": "Perging",
 }
 
 

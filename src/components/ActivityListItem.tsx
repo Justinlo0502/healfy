@@ -12,6 +12,7 @@ const TYPE_ICON: Record<string, typeof Footprints> = {
   Walk: Footprints,
   Hike: Footprints,
   Swim: Waves,
+  Perging: Waves,
 };
 
 type ActivityRowData = {

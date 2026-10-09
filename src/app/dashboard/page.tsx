@@ -3,12 +3,11 @@ import { redirect } from "next/navigation";
 import { requireAthlete } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { acwr } from "@/lib/insights";
-import { daysAgo, formatDate, formatDistanceKm, formatDuration, startOfToday } from "@/lib/format";
+import { LB_PER_KG, daysAgo, formatDate, formatDistanceKm, formatDuration, startOfToday } from "@/lib/format";
 import ActivityListItem from "@/components/ActivityListItem";
 import { ArrowRight, Battery, Gauge, Heart, Moon, Scale, Zap } from "lucide-react";
 
 const LOOKBACK_DAYS = 60;
-const LB_PER_KG = 2.20462;
 
 function average(values: number[]): number | null {
   return values.length ? values.reduce((sum, v) => sum + v, 0) / values.length : null;
@@ -126,11 +125,11 @@ export default async function DashboardPage() {
           <dl className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted">
             <div>
               <dt>7-day avg load</dt>
-              <dd className="tabular-nums font-mono text-foreground">{acwrResult.acute7dAvg.toFixed(0)}</dd>
+              <dd className="tabular-nums font-mono text-foreground">{acwrResult.acute7dAvg.toFixed(2)}</dd>
             </div>
             <div>
               <dt>28-day avg load</dt>
-              <dd className="tabular-nums font-mono text-foreground">{acwrResult.chronic28dAvg.toFixed(0)}</dd>
+              <dd className="tabular-nums font-mono text-foreground">{acwrResult.chronic28dAvg.toFixed(2)}</dd>
             </div>
           </dl>
         </section>
@@ -236,27 +235,27 @@ export default async function DashboardPage() {
             <div>
               <dt className="text-xs text-muted">Latest · {formatDate(latestWeighIn.measuredAt)}</dt>
               <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
-                {(latestWeighIn.weightKg * LB_PER_KG).toFixed(1)} lb
+                {(latestWeighIn.weightKg * LB_PER_KG).toFixed(2)} lb
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted">7-day avg</dt>
               <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
-                {thisWeekAvgLb != null ? `${thisWeekAvgLb.toFixed(1)} lb` : "—"}
+                {thisWeekAvgLb != null ? `${thisWeekAvgLb.toFixed(2)} lb` : "—"}
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted">vs prior week</dt>
               <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
                 {weeklyChangeLb != null
-                  ? `${weeklyChangeLb >= 0 ? "+" : ""}${weeklyChangeLb.toFixed(1)} lb`
+                  ? `${weeklyChangeLb >= 0 ? "+" : ""}${weeklyChangeLb.toFixed(2)} lb`
                   : "—"}
               </dd>
             </div>
             <div>
               <dt className="text-xs text-muted">Body fat</dt>
               <dd className="tabular-nums font-mono mt-1 text-xl font-bold tracking-tight">
-                {latestWeighIn.bodyFatPct != null ? `${latestWeighIn.bodyFatPct.toFixed(1)}%` : "—"}
+                {latestWeighIn.bodyFatPct != null ? `${latestWeighIn.bodyFatPct.toFixed(2)}%` : "—"}
               </dd>
             </div>
           </dl>

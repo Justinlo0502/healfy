@@ -4,7 +4,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAthlete } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime, kgToLb } from "@/lib/format";
 import HevyWorkoutListItem from "@/components/HevyWorkoutListItem";
 import HevyHeatmap from "@/components/HevyHeatmap";
 import HevyOneRmChart from "@/components/HevyOneRmChart";
@@ -146,7 +146,7 @@ export default async function LiftsPage() {
           {hero ? (
             <>
               <p className="mt-3 text-5xl font-extrabold tracking-tight tabular-nums sm:text-6xl">
-                {Math.round(hero.weightKg)}<span className="text-2xl">kg</span>
+                {kgToLb(hero.weightKg).toFixed(2)}<span className="text-2xl">lb</span>
               </p>
               <p className="mt-1 text-sm opacity-90">
                 {hero.title} · {hero.reps} rep{hero.reps === 1 ? "" : "s"} · heaviest lift on record ·{" "}
@@ -165,8 +165,8 @@ export default async function LiftsPage() {
           { label: "Total workouts", value: stats.totalWorkouts, icon: Dumbbell },
           { label: "This year", value: stats.workoutsThisYear, icon: Zap },
           { label: "Last 30 days", value: stats.workoutsLast30Days, icon: Flame },
-          { label: "Total hours", value: stats.totalHours, icon: Timer },
-          { label: "Volume (kg)", value: stats.totalVolumeKg.toLocaleString(), icon: Scale },
+          { label: "Total hours", value: stats.totalHours.toFixed(2), icon: Timer },
+          { label: "Volume (lb)", value: kgToLb(stats.totalVolumeKg).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), icon: Scale },
         ].map((tile) => (
           <div key={tile.label} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
             <tile.icon className="h-4 w-4 text-muted" strokeWidth={2.5} />
@@ -193,7 +193,7 @@ export default async function LiftsPage() {
             {mainLifts.map((lift) => {
               const series = oneRepMaxSeries(allWorkouts, lift.exerciseTemplateId).map((p) => ({
                 date: formatDate(p.date),
-                oneRm: Math.round(p.oneRm * 10) / 10,
+                oneRm: Math.round(kgToLb(p.oneRm) * 100) / 100,
               }));
               return (
                 <div key={lift.exerciseTemplateId} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
@@ -250,10 +250,10 @@ export default async function LiftsPage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold">{lift.title}</p>
                     <p className="mt-0.5 tabular-nums text-lg font-extrabold tracking-tight">
-                      {pr.heaviestSet ? `${pr.heaviestSet.weightKg}kg × ${pr.heaviestSet.reps}` : "—"}
+                      {pr.heaviestSet ? `${kgToLb(pr.heaviestSet.weightKg).toFixed(2)}lb × ${pr.heaviestSet.reps}` : "—"}
                     </p>
                     <p className="text-xs text-muted">
-                      {pr.bestOneRm ? `Est. 1RM ${pr.bestOneRm.oneRm.toFixed(1)}kg` : "No estimate yet"}
+                      {pr.bestOneRm ? `Est. 1RM ${kgToLb(pr.bestOneRm.oneRm).toFixed(2)}lb` : "No estimate yet"}
                     </p>
                   </div>
                 </div>

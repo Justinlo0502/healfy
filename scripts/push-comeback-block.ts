@@ -26,7 +26,7 @@ import {
   rampLabel,
   restLabel,
   schemeLabel,
-  warmupPyramid,
+  warmupSets,
   type ProgramDay,
   type ProgramExercise,
   type RampSet,
@@ -83,7 +83,7 @@ function buildPayload(
       exercise_template_id: t.id,
       rest_seconds: 0,
       notes: `Warm-up · ${schemeLabel(ex.rx(week))} · ${ex.rx(week).loadLabel}. ${cueFor(ex, week)}`,
-      sets: warmupPyramid(ex).map((s) => hevySet(t.type, "warmup", s)),
+      sets: warmupSets(ex).map((s) => hevySet(t.type, "warmup", s)),
     };
   });
 

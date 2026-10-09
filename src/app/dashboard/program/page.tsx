@@ -283,8 +283,8 @@ export default async function ProgramPage() {
         <Panel title="Dragon boat trunk">
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
-              <b>McGill Big 3 in every warm-up</b> (curl-up, side bridge, bird dog): trunk endurance with low spinal
-              load, 5 days a week.
+              <b>Bird dog and dead bug in the warm-up</b> on Thursday, Friday and Sunday: trunk control with low spinal
+              load. Gym warm-ups are 1 set of shoulder and hip mobility chosen for that day&apos;s lifts.
             </li>
             <li>
               <b>Back extensor endurance</b> with 45° back extensions on Friday. Low extensor endurance is linked to

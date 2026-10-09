@@ -12,7 +12,7 @@ export default function HevyOneRmChart({ points }: { points: Point[] }) {
           <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--muted)" }} stroke="var(--line)" />
           <YAxis hide domain={["dataMin - 5", "dataMax + 5"]} />
           <Tooltip
-            formatter={(value) => [`${Number(value).toFixed(1)} kg`, "Est. 1RM"]}
+            formatter={(value) => [`${Number(value).toFixed(2)} lb`, "Est. 1RM"]}
             contentStyle={{
               background: "var(--surface)",
               border: "1px solid var(--line)",

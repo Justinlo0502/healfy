@@ -70,7 +70,7 @@ function ChartTooltip({
           <p key={row.key} className="mt-1 text-muted">
             {row.label}{" "}
             <span className="tabular-nums font-mono text-foreground">
-              {Number(point[row.key]).toFixed(1)}
+              {Number(point[row.key]).toFixed(2)}
               {row.unit}
             </span>
           </p>

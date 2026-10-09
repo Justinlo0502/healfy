@@ -2,11 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAthlete } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { daysAgo, formatDate } from "@/lib/format";
+import { LB_PER_KG, daysAgo, formatDate } from "@/lib/format";
 import BodyCharts, { type WeighInPoint } from "./BodyCharts";
 import { Scale } from "lucide-react";
 
-const LB_PER_KG = 2.20462;
 const DAY_MS = 24 * 60 * 60 * 1000;
 const TABLE_ROWS = 20;
 const REWEIGH_WINDOW_MS = 10 * 60 * 1000;
@@ -30,8 +29,8 @@ function slopeLbPerWeek(points: { t: number; lb: number }[]): number {
   return (num / den) * 7 * DAY_MS;
 }
 
-function round1(value: number): number {
-  return Math.round(value * 10) / 10;
+function round2(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 export default async function BodyPage() {
@@ -88,8 +87,8 @@ export default async function BodyPage() {
     }
     return {
       t,
-      weightLb: round1(m.weightKg * LB_PER_KG),
-      avgLb: round1(average(window) as number),
+      weightLb: round2(m.weightKg * LB_PER_KG),
+      avgLb: round2(average(window) as number),
       bodyFatPct: m.bodyFatPct,
     };
   });
@@ -113,9 +112,9 @@ export default async function BodyPage() {
   const stats = [
     {
       label: `Latest · ${formatDate(latest.measuredAt)}`,
-      value: `${(latest.weightKg * LB_PER_KG).toFixed(1)} lb`,
+      value: `${(latest.weightKg * LB_PER_KG).toFixed(2)} lb`,
     },
-    { label: "7-day avg", value: thisWeekAvg != null ? `${thisWeekAvg.toFixed(1)} lb` : "—" },
+    { label: "7-day avg", value: thisWeekAvg != null ? `${thisWeekAvg.toFixed(2)} lb` : "—" },
     {
       label: "Rate (last 4 wks)",
       value:
@@ -124,7 +123,7 @@ export default async function BodyPage() {
     },
     {
       label: "Body fat",
-      value: latest.bodyFatPct != null ? `${latest.bodyFatPct.toFixed(1)}%` : "—",
+      value: latest.bodyFatPct != null ? `${latest.bodyFatPct.toFixed(2)}%` : "—",
     },
   ];
 
@@ -176,14 +175,14 @@ export default async function BodyPage() {
                       year: "numeric",
                     })}
                   </td>
-                  <td className="py-2 pr-4 text-right">{(m.weightKg * LB_PER_KG).toFixed(1)} lb</td>
+                  <td className="py-2 pr-4 text-right">{(m.weightKg * LB_PER_KG).toFixed(2)} lb</td>
                   <td className="py-2 pr-4 text-right">
-                    {m.bodyFatPct != null ? `${m.bodyFatPct.toFixed(1)}%` : "—"}
+                    {m.bodyFatPct != null ? `${m.bodyFatPct.toFixed(2)}%` : "—"}
                   </td>
                   <td className="py-2 pr-4 text-right">
-                    {m.muscleMassKg != null ? `${(m.muscleMassKg * LB_PER_KG).toFixed(1)} lb` : "—"}
+                    {m.muscleMassKg != null ? `${(m.muscleMassKg * LB_PER_KG).toFixed(2)} lb` : "—"}
                   </td>
-                  <td className="py-2 text-right">{m.waterPct != null ? `${m.waterPct.toFixed(1)}%` : "—"}</td>
+                  <td className="py-2 text-right">{m.waterPct != null ? `${m.waterPct.toFixed(2)}%` : "—"}</td>
                 </tr>
               ))}
             </tbody>

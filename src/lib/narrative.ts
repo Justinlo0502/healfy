@@ -79,11 +79,11 @@ export function explainActivity(activity: NarrativeActivity, athlete: NarrativeA
   if (activity.hrDriftPct != null) {
     if (activity.hrDriftPct < 5) {
       sentences.push(
-        `Heart rate stayed well-controlled relative to pace across the session (${activity.hrDriftPct.toFixed(1)}% decoupling) — no signs of fatigue creeping in.`
+        `Heart rate stayed well-controlled relative to pace across the session (${activity.hrDriftPct.toFixed(2)}% decoupling) — no signs of fatigue creeping in.`
       );
     } else {
       sentences.push(
-        `Heart rate climbed ${activity.hrDriftPct.toFixed(1)}% relative to pace as the session went on — a sign of fatigue, heat, or dehydration rather than a pace that was too hard from the start.`
+        `Heart rate climbed ${activity.hrDriftPct.toFixed(2)}% relative to pace as the session went on — a sign of fatigue, heat, or dehydration rather than a pace that was too hard from the start.`
       );
     }
   }

@@ -1,6 +1,17 @@
 // Small display-formatting helpers shared across dashboard pages. Pure
 // functions only — no I/O.
 
+export const LB_PER_KG = 2.20462;
+
+export function kgToLb(kg: number): number {
+  return kg * LB_PER_KG;
+}
+
+/** Every weight shown in the UI is pounds, to 2 decimal places. */
+export function formatLb(kg: number): string {
+  return `${kgToLb(kg).toFixed(2)} lb`;
+}
+
 export function formatDistanceKm(meters: number): string {
   return `${(meters / 1000).toFixed(2)} km`;
 }

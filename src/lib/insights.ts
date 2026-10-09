@@ -18,7 +18,7 @@ export type HrZone = { zone: 1 | 2 | 3 | 4 | 5; label: string; lowBpm: number; h
 // sustained, self-driven cardio effort. It doesn't mean much for activities
 // where heart rate isn't primarily a function of your own exertion (e.g.
 // steering a boat) — showing a zone breakdown there is just noise, not signal.
-const ZONE_RELEVANT_TYPES = new Set(["Run", "Trail Run", "Treadmill Run", "Ride", "Swim"]);
+const ZONE_RELEVANT_TYPES = new Set(["Run", "Trail Run", "Treadmill Run", "Ride", "Swim", "Perging"]);
 
 export function isZoneRelevantType(type: string): boolean {
   return ZONE_RELEVANT_TYPES.has(type);
