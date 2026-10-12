@@ -1,16 +1,18 @@
 // Pushes the Comeback Block (src/lib/program.ts) to Hevy as routines in a
 // "Comeback Block" folder: one routine per gym day per week (24), plus the
 // Thursday home session once. Creates any custom exercises the program needs
-// first. Safe to re-run: folders, custom exercises and routines that already
-// exist locally (by title) are skipped, so a failed run can just be retried.
+// first. Safe to re-run: routines that already exist (by title) are updated in
+// place, except sessions whose date has passed, so a failed run can be retried.
 //
 //   npx tsx scripts/push-comeback-block.ts --dry-run   # print what would be created
 //   npx tsx scripts/push-comeback-block.ts             # create in Hevy
+//   npx tsx scripts/push-comeback-block.ts --from-week 6   # resume after a 429
 import "dotenv/config";
 import { db } from "../src/lib/db";
 import {
   pushNewExerciseTemplateIfMissing,
   pushNewRoutine,
+  pushRoutineUpdate,
   pushNewRoutineFolderIfMissing,
   type RoutineWritePayload,
 } from "../src/lib/hevy";
@@ -33,6 +35,15 @@ import {
 } from "../src/lib/program";
 
 const DRY_RUN = process.argv.includes("--dry-run");
+// Resume after a Hevy rate-limit: --from-week 6 skips earlier weeks (the Thursday session counts as week 1).
+const fromWeekArg = process.argv.indexOf("--from-week");
+const FROM_WEEK = fromWeekArg >= 0 ? Number(process.argv[fromWeekArg + 1]) : 1;
+// Only push one weekday, e.g. --day Mon, to keep a small change under Hevy's rate limit.
+const dayArg = process.argv.indexOf("--day");
+const ONLY_DAY = dayArg >= 0 ? process.argv[dayArg + 1] : null;
+// --create-only: never update; makes retries after a 429 cheap.
+const CREATE_ONLY = process.argv.includes("--create-only");
+const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const LB_TO_KG = 0.45359237;
 const toKg = (lb: number) => Math.round(lb * LB_TO_KG * 1000) / 1000;
 
@@ -87,19 +98,32 @@ function buildPayload(
     };
   });
 
-  const main = day.exercises.map((ex) => {
+  const main = day.exercises.flatMap((ex) => {
     const t = resolve(ex.hevyTitle);
     const rx = ex.rx(week);
+    // Prep moves (scapular pull-ups) go in as their own Hevy exercise right before the lift they prime.
+    const primers = (ex.primer ?? []).map((p) => {
+      const pt = resolve(p.hevyTitle);
+      return {
+        exercise_template_id: pt.id,
+        rest_seconds: 0,
+        notes: `Warm-up · ${schemeLabel(p.rx(week))}. ${cueFor(p, week)}`,
+        sets: warmupSets(p).map((st) => hevySet(pt.type, "warmup", st)),
+      };
+    });
     const ramp = (ex.ramp?.(week) ?? []).map((s) => hevySet(t.type, "warmup", s));
     const work = Array.from({ length: rx.sets }, () =>
       hevySet(t.type, "normal", { weightLb: rx.weightLb, reps: rx.reps, seconds: rx.seconds, meters: rx.meters })
     );
-    return {
-      exercise_template_id: t.id,
-      rest_seconds: ex.restSeconds,
-      notes: exerciseNotes(ex, week),
-      sets: [...ramp, ...work],
-    };
+    return [
+      ...primers,
+      {
+        exercise_template_id: t.id,
+        rest_seconds: ex.restSeconds,
+        notes: exerciseNotes(ex, week),
+        sets: [...ramp, ...work],
+      },
+    ];
   });
 
   const when = day.repeatsWeekly ? "every Thursday" : `Week ${week} · ${day.key} ${dayDate(week, day)}`;
@@ -147,14 +171,34 @@ async function main() {
     : await db.hevyRoutineFolder.findFirst({ where: { athleteId, hevyFolderId: String(folderId) } });
 
   // 3. Routines, in training order so the folder reads top to bottom.
+  const today = new Date().toISOString().slice(0, 10);
   let created = 0;
   for (let week = 1; week <= PROGRAM_WEEKS; week++) {
     for (const day of PROGRAM_DAYS) {
       if (day.repeatsWeekly && week > 1) continue;
+      if (week < FROM_WEEK) continue;
+      if (ONLY_DAY && day.key !== ONLY_DAY) continue;
       const payload = buildPayload(week, day, templates, folderId);
       const existing = await db.hevyRoutine.findFirst({ where: { athleteId, title: payload.title } });
-      if (existing) {
+      if (existing && CREATE_ONLY) {
         console.log(`skip (exists): ${payload.title}`);
+        continue;
+      }
+      if (existing) {
+        // Sessions already done keep their routine as logged; everything else is updated in place.
+        if (!day.repeatsWeekly && dayDate(week, day) < today) {
+          console.log(`skip (already trained): ${payload.title}`);
+          continue;
+        }
+        if (DRY_RUN) {
+          console.log(`[dry-run] would update ${payload.title}`);
+          continue;
+        }
+        // Hevy's PUT rejects folder_id (the routine keeps its folder), so drop it.
+        const { folder_id: _folder, ...updatePayload } = payload;
+        await pushRoutineUpdate(existing.id, updatePayload);
+        console.log(`updated: ${payload.title}`);
+        await pause(1500);
         continue;
       }
       if (DRY_RUN) {
@@ -171,6 +215,7 @@ async function main() {
       await pushNewRoutine(athleteId, payload, localFolder?.id ?? null);
       created++;
       console.log(`created: ${payload.title}`);
+      await pause(1500);
     }
   }
   console.log(DRY_RUN ? "dry run complete" : `done: ${created} routine(s) created`);

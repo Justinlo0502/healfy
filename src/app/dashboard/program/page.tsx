@@ -96,6 +96,11 @@ function DayCard({ day, week, today }: { day: ProgramDay; week: number; today: s
               <div className="min-w-0">
                 <p className="font-semibold">{ex.name}</p>
                 <p className="mt-0.5 max-w-prose text-[13px] leading-snug text-muted">{cueFor(ex, week)}</p>
+                {ex.primer?.length ? (
+                  <p className="mt-1 font-mono text-xs text-muted">
+                    Before this: {ex.primer.map((p) => `${p.name} ${p.rx(week).repsLabel}`).join(" · ")}
+                  </p>
+                ) : null}
                 {ramp ? <p className="mt-1 font-mono text-xs text-muted">Ramp: {rampLabel(ramp)}</p> : null}
               </div>
               <div className="col-start-2 font-mono tabular-nums sm:col-start-3 sm:text-right">
@@ -202,8 +207,8 @@ export default async function ProgramPage() {
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
               <b>Bench, 3 days.</b> Monday is 8s at 135 → 155, with sets dropping from 4 to 3 as the weight climbs.
-              Wednesday is paused bench at 130 → 150, going from 4 × 5 to 3 × 4. Friday is 5 × 3+ at 150 → 170. Week 6
-              tapers into a max test on Friday.
+              Wednesday is paused bench at 130 → 150, going from 4 × 5 to 3 × 4. Friday is 5 × 3+ at 150 → 175 (shifted up
+              5 lb after the 7-rep AMRAP on Oct 9). Week 6 tapers into a max test on Friday.
             </li>
             <li>
               <b>Bench auto-adjust:</b> if Friday&apos;s AMRAP set reaches 6+ reps, add an extra 5 lb to every bench
@@ -283,8 +288,9 @@ export default async function ProgramPage() {
         <Panel title="Dragon boat trunk">
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
-              <b>Bird dog and dead bug in the warm-up</b> on Thursday, Friday and Sunday: trunk control with low spinal
-              load. Gym warm-ups are 1 set of shoulder and hip mobility chosen for that day&apos;s lifts.
+              <b>Bird dog in every warm-up</b> (plus dead bug on Thursday): trunk control with low spinal load. Gym
+              warm-ups are 2 min row, then cat-camel, thread the needle, bird dog and fire hydrants, with banded pull
+              aparts on bench days. Scapular pull-ups go right before pull-ups.
             </li>
             <li>
               <b>Back extensor endurance</b> with 45° back extensions on Friday. Low extensor endurance is linked to

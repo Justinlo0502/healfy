@@ -43,6 +43,8 @@ export type ProgramExercise = {
   rx: (week: number) => Prescription;
   cue: string | ((week: number) => string);
   ramp?: (week: number) => RampSet[];
+  /** Prep moves done right before this exercise (e.g. scapular pull-ups before pull-ups). */
+  primer?: ProgramExercise[];
 };
 
 export type ProgramDay = {
@@ -70,26 +72,23 @@ const lin = (start: number, step: number) => (w: number) => start + step * (w - 
 const lb = (v: number) => `${v} lb`;
 const belt = (v: number) => (v === 0 ? "BW" : `+${v} lb`);
 
+/** Bar ramp: one set of 10 with the bar, plus one ~70% single-triple only when the work weight is heavy. */
 function barRamp(work: number): RampSet[] {
   const sets: RampSet[] = [{ weightLb: BAR, reps: 10 }];
-  for (const [pct, reps] of [[0.5, 5], [0.7, 3], [0.85, 1]] as const) {
-    const v = r5(work * pct);
-    if (v > BAR && v < work) sets.push({ weightLb: v, reps });
-  }
+  const v = r5(work * 0.7);
+  if (work >= 155 && v > BAR && v < work) sets.push({ weightLb: v, reps: 3 });
   return sets;
 }
 
+/** Deadlift ramp: 135 × 5, then one ~80% double. */
 function dlRamp(work: number): RampSet[] {
   const sets: RampSet[] = [{ weightLb: 135, reps: 5 }];
-  for (const [pct, reps] of [[0.7, 3], [0.85, 1]] as const) {
-    const v = r5(work * pct);
-    if (v > (sets[sets.length - 1].weightLb ?? 0) && v < work) sets.push({ weightLb: v, reps });
-  }
+  const v = r5(work * 0.8);
+  if (v > 135 && v < work) sets.push({ weightLb: v, reps: 2 });
   return sets;
 }
 
-const pullUpRamp = (added: number): RampSet[] =>
-  added >= 10 ? [{ weightLb: 0, reps: 5 }, { weightLb: r5(added / 2), reps: 2 }] : [{ weightLb: 0, reps: 5 }];
+const pullUpRamp = (): RampSet[] => [{ weightLb: 0, reps: 5 }];
 
 const fixed = (p: Prescription) => () => p;
 
@@ -105,18 +104,22 @@ const BENCH_VOLUME: [number, number, number][] = [
 const BENCH_PAUSED: [number, number, number][] = [
   [4, 5, 130], [4, 5, 130], [4, 5, 135], [4, 4, 140], [3, 4, 145], [3, 3, 135],
 ];
-/** Friday heavy 5×3+; week 6 is a max test. */
-const BENCH_HEAVY: (number | null)[] = [150, 155, 160, 165, 170, null];
+/** Friday heavy 5×3+; week 6 is a max test. Week 1 AMRAP was 7 reps, so +5 lb from week 2 (the 6+ rep rule). */
+const BENCH_HEAVY: (number | null)[] = [150, 160, 165, 170, 175, null];
+
+/** Wednesday squat 3×10: held at 135 in week 2 because only 2 of 3 sets were done in week 1. */
+const SQUAT_VOLUME = [135, 135, 145, 150, 160, 135];
+
+/** Friday deadlift 5×3+: week 1 was 225 × 3, 3, 3, 3, 6, well above the planned 190, so the ladder restarts from there. */
+const DEADLIFT_T1 = [225, 235, 245, 255, 260, 265];
 
 /** Monday squat 5×3+: week 1 was 160 with an 8-rep AMRAP, so week 2 jumps. */
 const SQUAT_T1 = [160, 175, 185, 190, 200, 205];
 
 const BENCH_TEST_RAMP: RampSet[] = [
   { weightLb: BAR, reps: 10 },
-  { weightLb: 95, reps: 5 },
   { weightLb: 135, reps: 3 },
-  { weightLb: 155, reps: 1 },
-  { weightLb: 175, reps: 1 },
+  { weightLb: 165, reps: 1 },
 ];
 
 // ---------------------------------------------------------------------------
@@ -136,44 +139,32 @@ function prep(
 
 const EASY_ROW: ProgramExercise = {
   name: "Easy row or bike", hevyTitle: "Rowing Machine", tier: "MOBILITY", restSeconds: 0,
-  rx: fixed({ sets: 1, seconds: 180, weightLb: null, loadLabel: "easy" }),
-  cue: "3 minutes, easy pace. Just raise your temperature.",
+  rx: fixed({ sets: 1, seconds: 120, weightLb: null, loadLabel: "easy" }),
+  cue: "2 minutes, easy pace. Just raise your temperature.",
 };
 
-const THREAD_NEEDLE = prep("Thread the Needle", "Thread the Needle", 1, 8, "8 / side",
+const CAT_CAMEL = prep("Cat-Camel", "Cat-Camel", 1, 8, "8",
+  "On all fours, round the back up then sag it down, slowly. Warms up the spine before loading it.");
+const THREAD_NEEDLE = prep("Thread the Needle", "Thread the Needle", 1, 6, "6 / side",
   "On all fours, slide one arm under the body and rotate the upper back. Opens the thoracic spine for bench and the paddle stroke.");
-const PULL_APART = prep("Banded Pull Apart", "Band Pullaparts", 1, 15, "15",
-  "Arms straight, pull the band to your chest by squeezing the shoulder blades. Wakes up the rear delts before pressing.");
-const LIZARD = prep("Lizard Lunge", "Lizard Lunges", 1, 6, "6 / side",
-  "Deep lunge with both hands inside the front foot, then drop the hips. Opens hips and adductors for squat depth.");
-const GLUTE_BRIDGE = prep("Glute Bridge", "Glute Bridge", 1, 10, "10",
-  "Squeeze the glutes at the top for 1 s. Primes them so the squat comes from the hips, not the low back.");
-const DISLOCATOR = prep("Shoulder Dislocator", "Shoulder Dislocators", 1, 10, "10",
-  "Wide grip on a band or stick, arms straight, circle it overhead and behind. Narrow the grip as it gets easy.");
-const NINETY_NINETY = prep("90/90", "90/90s", 1, 6, "6 / side",
-  "Rotate between the two 90° positions without using your hands. Hip rotation range for squat and the boat.");
-const LATERAL_LUNGE = prep("Lateral Lunge", "Lateral Lunge", 1, 6, "6 / side",
-  "Sit back into one hip with the other leg straight, toes forward. Adductor and hip mobility for squat depth.");
-const FIRE_HYDRANT = prep("Fire Hydrant", "Fire Hydrants", 1, 10, "10 / side",
-  "Lift the knee out to the side without rotating the pelvis. Glute med activation.");
-const YTWL = prep("YTWLs", "YTWLs", 1, 6, "6 each",
-  "Light or no weight, face down or bent over. Make a Y, T, W then L, shoulder blades down and back. Rotator cuff and scapular warm-up for heavy bench.");
-const SCAP_PULLUP = prep("Scapular Pull-up", "Scapular Pull Ups", 1, 8, "8",
-  "Hang from the bar, arms straight, pull the shoulder blades down without bending the elbows. Primes the lats for pull-ups.");
-const GOOD_MORNING = prep("Bodyweight Good Morning", "Good Morning (Barbell)", 1, 10, "10",
-  "Hands behind the head, soft knees, push the hips back until the hamstrings pull, then stand. Grooves the hinge for deadlifts.");
-const DEAD_BUG = prep("Dead Bug", "Dead Bug", 1, 6, "6 / side",
-  "Low back flat on the floor, extend the opposite arm and leg slowly. Bracing practice for heavy pulls.");
-const AROUND_WORLD = prep("Around the World", "Around The World", 1, 6, "6 each way",
-  "Light plate or no weight, straight arms, sweep a big circle from the front to the sides. Shoulder range for lateral raises and overhead work.");
 const BIRD_DOG = prep("Bird Dog", "Bird Dog", 1, 6, "6 / side",
   "Reach the opposite arm and leg out long, hips level, 3 s hold. Trunk control for rowing and carries.");
+const FIRE_HYDRANT = prep("Fire Hydrant", "Fire Hydrants", 1, 8, "8 / side",
+  "On all fours, lift the knee out to the side without rotating the hips. Wakes up the glutes before squats and pulls.");
+const PULL_APART = prep("Banded Pull Apart", "Band Pullaparts", 1, 15, "15",
+  "Arms straight, pull the band to your chest by squeezing the shoulder blades. Wakes up the rear delts before pressing.");
+const DEAD_BUG = prep("Dead Bug", "Dead Bug", 1, 6, "6 / side",
+  "Low back flat on the floor, extend the opposite arm and leg slowly. Bracing practice for heavy pulls.");
+const SCAP_PULLUP = prep("Scapular Pull-up", "Scapular Pull Ups", 1, 8, "8",
+  "Hang from the bar, arms straight, pull the shoulder blades down without bending the elbows. Primes the lats right before pull-ups.");
 
-const MON_WARMUP = [EASY_ROW, THREAD_NEEDLE, PULL_APART, LIZARD, GLUTE_BRIDGE];
-const WED_WARMUP = [EASY_ROW, DISLOCATOR, NINETY_NINETY, LATERAL_LUNGE, FIRE_HYDRANT];
+// Gym warm-up: row, then the same four floor moves every day. Bench days add the banded pull apart.
+const GYM_WARMUP = [EASY_ROW, CAT_CAMEL, THREAD_NEEDLE, BIRD_DOG, FIRE_HYDRANT];
+const MON_WARMUP = [...GYM_WARMUP, PULL_APART];
+const WED_WARMUP = [...GYM_WARMUP, PULL_APART];
 const THU_WARMUP = [BIRD_DOG, DEAD_BUG];
-const FRI_WARMUP = [EASY_ROW, YTWL, SCAP_PULLUP, GOOD_MORNING, DEAD_BUG];
-const SUN_WARMUP = [EASY_ROW, THREAD_NEEDLE, SCAP_PULLUP, AROUND_WORLD, BIRD_DOG];
+const FRI_WARMUP = [...GYM_WARMUP, PULL_APART];
+const SUN_WARMUP = GYM_WARMUP;
 
 /** The one-line warm-up summary shown above a day's exercises. */
 function warmupNote(warmup: ProgramExercise[]): string {
@@ -181,7 +172,7 @@ function warmupNote(warmup: ProgramExercise[]): string {
     .filter((ex) => ex !== EASY_ROW)
     .map((ex) => `${ex.name} ${ex.rx(1).repsLabel}`)
     .join(" · ");
-  return `Warm-up (≈6 min, 1 set each): 3 min easy row or bike → ${list} → ramp sets on the first lift.`;
+  return `Warm-up (≈5 min, 1 set each): 2 min easy row or bike → ${list} → 1–2 ramp sets on the first lift.`;
 }
 
 /** Hevy sets for a warm-up move, one per prescribed set. */
@@ -201,7 +192,7 @@ export const PROGRAM_DAYS: ProgramDay[] = [
     warmup: MON_WARMUP,
     exercises: [
       {
-        name: "Bench Press · volume", hevyTitle: "Bench Press (Barbell)", tier: "T1", restSeconds: 150,
+        name: "Bench Press · volume", hevyTitle: "Bench Press (Barbell)", tier: "T1", restSeconds: 120,
         rx: (w) => {
           const [sets, reps, load] = BENCH_VOLUME[w - 1];
           return { sets, reps, weightLb: load, loadLabel: lb(load) };
@@ -215,7 +206,7 @@ export const PROGRAM_DAYS: ProgramDay[] = [
               : "Aim for 8 on every set. If a set drops to 6–7, keep the weight next week until every set hits 8.",
       },
       {
-        name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T1", restSeconds: 210,
+        name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T1", restSeconds: 150,
         rx: (w) => ({ sets: 5, reps: 3, repsLabel: "3+", weightLb: SQUAT_T1[w - 1], loadLabel: lb(SQUAT_T1[w - 1]) }),
         ramp: (w) => barRamp(SQUAT_T1[w - 1]),
         cue: (w) =>
@@ -225,8 +216,8 @@ export const PROGRAM_DAYS: ProgramDay[] = [
       },
       {
         name: "Seated DB Shoulder Press", hevyTitle: "Shoulder Press (Dumbbell)", tier: "T2", restSeconds: 120,
-        rx: fixed({ sets: 3, reps: 6, repsLabel: "6–10", weightLb: 40, loadLabel: "start 40s" }),
-        cue: "Bench at 80–90°, back on the pad. Dumbbells let your wrists and elbows rotate naturally, which is easier on the elbow than a barbell. You did 40s × 6 × 3 on Oct 5 and 8 × 3 on Oct 2. Build reps at 40s. When all 3 sets hit 10, go to 45s.",
+        rx: fixed({ sets: 3, reps: 8, repsLabel: "8–10", weightLb: 40, loadLabel: "start 40s" }),
+        cue: "Bench at 80–90°, back on the pad. Dumbbells let your wrists and elbows rotate naturally, which is easier on the elbow than a barbell. You did 40s × 8, 8, 8 on Oct 2 (and 6, 6, 6 on Oct 5, which was just the target in the routine), so aim for 8 and build to 10 at 40s. When all 3 sets hit 10, go to 45s.",
       },
       {
         name: "Seated Leg Curl", hevyTitle: "Seated Leg Curl (Machine)", tier: "T3", restSeconds: 75,
@@ -234,9 +225,9 @@ export const PROGRAM_DAYS: ProgramDay[] = [
         cue: "Hamstrings and knee health. 2 s squeeze, slow return.",
       },
       {
-        name: "DB Lateral Raise", hevyTitle: "Lateral Raise (Dumbbell)", tier: "T3", restSeconds: 60,
-        rx: fixed({ sets: 3, reps: 12, repsLabel: "12–15", weightLb: 15, loadLabel: "start 15s" }),
-        cue: "Lead with the elbows, stop at shoulder height. You did 15s × 12 × 3 on Oct 5. Build to 15s × 15, then go up.",
+        name: "Triceps Rope Pushdown", hevyTitle: "Triceps Rope Pushdown", tier: "T3", restSeconds: 60,
+        rx: fixed({ sets: 3, reps: 8, repsLabel: "8–12", weightLb: 25, loadLabel: "start 25 lb" }),
+        cue: "Elbows pinned to the ribs, taking the lateral raise's slot. You did 25 × 6, 7, 6 on Oct 7. Build reps to 12 before adding weight. Stop the set if the elbow goes over 3/10.",
       },
       {
         name: "Reverse Wrist Curl", hevyTitle: "Reverse Wrist Curl", tier: "ELBOW", restSeconds: 60,
@@ -251,7 +242,7 @@ export const PROGRAM_DAYS: ProgramDay[] = [
     warmup: WED_WARMUP,
     exercises: [
       {
-        name: "Paused Bench Press", hevyTitle: "Paused Bench Press (Barbell)", tier: "T1", restSeconds: 150,
+        name: "Paused Bench Press", hevyTitle: "Paused Bench Press (Barbell)", tier: "T1", restSeconds: 120,
         rx: (w) => {
           const [sets, reps, load] = BENCH_PAUSED[w - 1];
           return { sets, reps, weightLb: load, loadLabel: lb(load) };
@@ -264,9 +255,12 @@ export const PROGRAM_DAYS: ProgramDay[] = [
       },
       {
         name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T2", restSeconds: 150,
-        rx: (w) => ({ sets: 3, reps: 10, weightLb: lin(135, 10)(w), loadLabel: lb(lin(135, 10)(w)) }),
-        ramp: (w) => [{ weightLb: BAR, reps: 10 }, { weightLb: r5(lin(135, 10)(w) * 0.65), reps: 5 }],
-        cue: "Leave 2 in the tank, since you paddle tonight. You did 135 × 10 × 2 on Oct 7. Get all 3 sets this week.",
+        rx: (w) => ({ sets: 3, reps: 10, weightLb: SQUAT_VOLUME[w - 1], loadLabel: lb(SQUAT_VOLUME[w - 1]) }),
+        ramp: () => [{ weightLb: BAR, reps: 10 }],
+        cue: (w) =>
+          w === 2
+            ? "You did 135 × 10, 10 on Oct 7 (two of three sets), so repeat 135 and get all 3 sets. Leave 2 in the tank, since you paddle tonight."
+            : "Leave 2 in the tank, since you paddle tonight. Get all 3 sets of 10 before the weight goes up.",
       },
       {
         name: "Smith Incline Press", hevyTitle: "Incline Bench Press (Smith Machine)", tier: "T2", restSeconds: 120,
@@ -353,7 +347,7 @@ export const PROGRAM_DAYS: ProgramDay[] = [
     warmup: FRI_WARMUP,
     exercises: [
       {
-        name: "Bench Press · heavy", hevyTitle: "Bench Press (Barbell)", tier: "T1", restSeconds: 210,
+        name: "Bench Press · heavy", hevyTitle: "Bench Press (Barbell)", tier: "T1", restSeconds: 120,
         rx: (w) => {
           const load = BENCH_HEAVY[w - 1];
           return load === null
@@ -367,23 +361,32 @@ export const PROGRAM_DAYS: ProgramDay[] = [
         cue: (w) =>
           w === 6
             ? "Opener ≈95% of the max estimated from Week 5's AMRAP set (weight × (1 + reps ÷ 30)), then 1–2 attempts of +5–10 lb. Your spring best is 225."
-            : "Last set AMRAP, 1 clean rep left. If you get 6+ reps, add an extra 5 lb to every bench number from next week. If you miss reps, repeat the weight as 6 × 2.",
+            : w === 2
+              ? "You did 150 × 3, 3, 3, 3, 7 on Oct 9. The 7-rep AMRAP triggered the +5 lb rule, so heavy bench moves to 160 and the rest of the block shifts up with it. Last set AMRAP, 1 clean rep left."
+              : "Last set AMRAP, 1 clean rep left. If you get 6+ reps, add an extra 5 lb to every bench number from next week. If you miss reps, repeat the weight as 6 × 2.",
       },
       {
-        name: "Deadlift (conventional)", hevyTitle: "Deadlift (Barbell)", tier: "T1", restSeconds: 210,
-        rx: (w) => ({ sets: 5, reps: 3, repsLabel: "3+", weightLb: lin(190, 10)(w), loadLabel: lb(lin(190, 10)(w)) }),
-        ramp: (w) => dlRamp(lin(190, 10)(w)),
-        cue: "Reset every rep: bar over mid-foot, lats tight, push the floor away. Last set AMRAP, 1 clean rep left. You did 205 × 5, 5 on Oct 2.",
+        name: "Deadlift (conventional)", hevyTitle: "Deadlift (Barbell)", tier: "T1", restSeconds: 150,
+        rx: (w) => ({ sets: 5, reps: 3, repsLabel: "3+", weightLb: DEADLIFT_T1[w - 1], loadLabel: lb(DEADLIFT_T1[w - 1]) }),
+        ramp: (w) => dlRamp(DEADLIFT_T1[w - 1]),
+        cue: (w) =>
+          w === 2
+            ? "You did 225 × 3, 3, 3, 3, 6 on Oct 9, so the plan moves up 10 lb. Reset every rep: bar over mid-foot, lats tight, push the floor away. Last set AMRAP, 1 clean rep left."
+            : "Reset every rep: bar over mid-foot, lats tight, push the floor away. Last set AMRAP, 1 clean rep left. If the AMRAP is under 3, repeat the weight as 6 × 2.",
       },
       {
-        name: "Pull-up", hevyTitle: "Pull Up (Weighted)", tier: "T2", restSeconds: 150,
+        name: "Pull-up", hevyTitle: "Pull Up (Weighted)", tier: "T2", restSeconds: 120,
         rx: (w) => ({ sets: 3, reps: 10, weightLb: lin(0, 5)(w), loadLabel: belt(lin(0, 5)(w)) }),
-        cue: "Overhand, dead hang to chin over the bar. Week 1 is bodyweight (you did BW × 10, 10, 6 on Sep 18), then +5 lb a week. If you miss reps, keep the weight as 3 × 8.",
+        primer: [SCAP_PULLUP],
+        cue: (w) =>
+          w === 2
+            ? "You did BW × 10, 10, 10 on Oct 9, so +5 lb. Do the scapular pull-ups first, then overhand, dead hang to chin over the bar. If you miss reps, keep the weight as 3 × 8."
+            : "Scapular pull-ups first, then overhand, dead hang to chin over the bar. +5 lb a week. If you miss reps, keep the weight as 3 × 8.",
       },
       {
         name: "45° Back Extension", hevyTitle: "Back Extension (Weighted Hyperextension)", tier: "T3", restSeconds: 75,
-        rx: fixed({ sets: 3, reps: 12, repsLabel: "12–15", weightLb: 0, loadLabel: "start BW" }),
-        cue: "Hinge at the hips with a neutral spine and a 2 s hold at the top. At 3 × 15, hold a plate. Back endurance for the boat.",
+        rx: fixed({ sets: 3, reps: 10, repsLabel: "10–15", weightLb: 45, loadLabel: "start 45 lb" }),
+        cue: "Hinge at the hips with a neutral spine and a 2 s hold at the top. You did 45 × 10, 10 on Oct 9, so start at 45 and build to 3 × 15 before adding weight. Back endurance for the boat.",
       },
       {
         name: "Wrist Curl", hevyTitle: "Wrist Curl", tier: "ELBOW", restSeconds: 60,
@@ -398,10 +401,11 @@ export const PROGRAM_DAYS: ProgramDay[] = [
     warmup: SUN_WARMUP,
     exercises: [
       {
-        name: "Weighted Pull-up", hevyTitle: "Pull Up (Weighted)", tier: "T1", restSeconds: 210,
+        name: "Weighted Pull-up", hevyTitle: "Pull Up (Weighted)", tier: "T1", restSeconds: 120,
         rx: (w) => ({ sets: 5, reps: 3, repsLabel: "3+", weightLb: lin(25, 5)(w), loadLabel: belt(lin(25, 5)(w)) }),
-        ramp: (w) => pullUpRamp(lin(25, 5)(w)),
-        cue: "Your #2 lift. Dead hang, shoulders down first, chin clearly over. Last set AMRAP, 1 clean rep left. You did +25 × 8, 8, 5 on Sep 30.",
+        ramp: () => pullUpRamp(),
+        primer: [SCAP_PULLUP],
+        cue: "Your #2 lift. Scapular pull-ups first. Dead hang, shoulders down first, chin clearly over. Last set AMRAP, 1 clean rep left. You did +25 × 8, 8, 5 on Sep 30.",
       },
       {
         name: "Chest-Supported Row (Nautilus Upper Back Row)", hevyTitle: "Nautilus Upper Back Row", tier: "T2", restSeconds: 120,
@@ -411,7 +415,7 @@ export const PROGRAM_DAYS: ProgramDay[] = [
       {
         name: "DB Lateral Raise", hevyTitle: "Lateral Raise (Dumbbell)", tier: "T3", restSeconds: 60,
         rx: fixed({ sets: 3, reps: 12, repsLabel: "12–15", weightLb: 15, loadLabel: "start 15s" }),
-        cue: "Second delt session of the week. Bench covers your front delts, so this is the only shoulder isolation besides face pulls.",
+        cue: "The only lateral raise day of the week (not on Monday, so the side delts get a full day off after this). Bench covers your front delts. You did 15s × 12 × 3 on Oct 5. Build to 15s × 15, then go up.",
       },
       {
         name: "Incline DB Curl", hevyTitle: "Seated Incline Curl (Dumbbell)", tier: "T3", restSeconds: 60,
@@ -480,8 +484,7 @@ export function cueFor(ex: ProgramExercise, week: number): string {
 
 export function restLabel(seconds: number): string {
   if (seconds === 0) return "";
-  if (seconds >= 180) return "3–4 min";
-  if (seconds >= 150) return "2–3 min";
+  if (seconds >= 150) return "2:30";
   if (seconds >= 120) return "2 min";
   if (seconds >= 75) return "60–90 s";
   return `${seconds} s`;
