@@ -227,6 +227,74 @@ async function fetchActivitiesFromSidecar(
   }
 }
 
+const ACTIVITY_TYPE_LABELS: Record<string, string> = {
+  running: "Run",
+  trail_running: "Trail Run",
+  treadmill_running: "Treadmill Run",
+  cycling: "Ride",
+  road_biking: "Ride",
+  mountain_biking: "Ride",
+  indoor_cycling: "Ride",
+  walking: "Walk",
+  hiking: "Hike",
+  lap_swimming: "Swim",
+  open_water_swimming: "Swim",
+  strength_training: "Weight Training",
+  stand_up_paddleboarding_v2: "Stand Up Paddleboarding",
+  // Indoor rowing machine used as a paddle-training ("perging") ergometer.
+  indoor_rowing: "Perging",
+};
+
+function friendlyActivityType(typeKey: string | undefined): string {
+  if (!typeKey) return "Activity";
+  return (
+    ACTIVITY_TYPE_LABELS[typeKey] ??
+    typeKey.replace(/_/g, " ").replace(/\w/g, (c) => c.toUpperCase())
+  );
+}
+
+/**
+ * Production fallback (no sidecar on Vercel): activity summaries straight
+ * from garmin-connect's getActivities(). Summary fields only — no weather and
+ * no GPS/HR streams (those need the sidecar), so HR drift stays null. Rows
+ * the sidecar already stored are skipped by id, so a later local sidecar sync
+ * is unaffected. startTime is Garmin's local start time read as UTC, matching
+ * how the sidecar stores it.
+ */
+async function fetchActivitiesFromGarminConnect(
+  client: GarminConnect,
+  knownIds: string[]
+): Promise<SidecarActivity[] | null> {
+  try {
+    const known = new Set(knownIds);
+    const summaries = await client.getActivities(0, ACTIVITY_FETCH_LIMIT);
+    const out: SidecarActivity[] = [];
+    for (const a of summaries) {
+      if (a.activityId == null || known.has(String(a.activityId))) continue;
+      const moving = a.movingDuration ?? a.duration;
+      if (typeof a.distance !== "number" || typeof moving !== "number") continue;
+      out.push({
+        garminId: String(a.activityId),
+        name: a.activityName || "Garmin activity",
+        type: friendlyActivityType(a.activityType?.typeKey),
+        startTime: `${a.startTimeLocal.replace(" ", "T")}Z`,
+        movingTimeSec: Math.round(moving),
+        distanceMeters: a.distance,
+        elevationGainMeters: typeof a.elevationGain === "number" ? a.elevationGain : null,
+        elevationLossMeters: typeof a.elevationLoss === "number" ? a.elevationLoss : null,
+        avgHR: typeof a.averageHR === "number" ? Math.round(a.averageHR) : null,
+        maxHR: typeof a.maxHR === "number" ? Math.round(a.maxHR) : null,
+        temperatureC: null,
+        humidityPct: null,
+        streamData: null,
+      });
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Pulls completed activities from the local-dev sidecar and stores any not
  * already synced, computing the same derived metrics (pace, training load,
@@ -235,6 +303,7 @@ async function fetchActivitiesFromSidecar(
  * math, not a second copy.
  */
 async function syncGarminActivities(
+  client: GarminConnect,
   athleteId: string,
   athlete: { maxHR: number | null; restingHR: number | null }
 ): Promise<number> {
@@ -244,7 +313,9 @@ async function syncGarminActivities(
   });
   const knownIds = existing.map((a) => a.garminId).filter((id): id is string => id != null);
 
-  const sidecarActivities = await fetchActivitiesFromSidecar(ACTIVITY_FETCH_LIMIT, knownIds);
+  const sidecarActivities =
+    (await fetchActivitiesFromSidecar(ACTIVITY_FETCH_LIMIT, knownIds)) ??
+    (await fetchActivitiesFromGarminConnect(client, knownIds));
   if (!sidecarActivities) return 0;
 
   let activitiesSynced = 0;
@@ -305,7 +376,7 @@ async function fetchBodyBattery(client: GarminConnect, date: Date): Promise<numb
   const dateStr = toDateString(date);
   try {
     const res = await client.get<unknown>(
-      `${GC_API_BASE}/wellness-service/wellness/bodyBattery/reports/daily/${dateStr}/${dateStr}`
+      `${GC_API_BASE}/wellness-service/wellness/bodyBattery/reports/daily?startDate=${dateStr}&endDate=${dateStr}`
     );
     const day = (Array.isArray(res) ? res[0] : res) as
       | { bodyBatteryValuesArray?: unknown[]; charged?: number }
@@ -508,7 +579,18 @@ export async function syncGarminForAthlete(athleteId: string): Promise<GarminSyn
   });
   if (!athlete) throw new Error(`Athlete ${athleteId} not found`);
 
-  const client = await getGarminClientForAthlete(athleteId);
+  let client: GarminConnect;
+  try {
+    client = await getGarminClientForAthlete(athleteId);
+  } catch (err) {
+    // The sidecar logs in with its own credentials, so an unreadable stored
+    // session (e.g. a local ENCRYPTION_KEY that differs from the one that
+    // encrypted it) shouldn't block a sidecar-backed sync. The unauthenticated
+    // placeholder's calls just fail and fall through to null.
+    if (!getSidecarBaseUrl()) throw err;
+    console.warn("Garmin session unreadable; syncing via sidecar only:", err);
+    client = new GarminConnect({ username: "", password: "" });
+  }
 
   let dailyMetricsSynced = 0;
   for (let i = 0; i < DAILY_METRICS_LOOKBACK_DAYS; i++) {
@@ -522,13 +604,15 @@ export async function syncGarminForAthlete(athleteId: string): Promise<GarminSyn
     await db.dailyMetric.upsert({
       where: { athleteId_date: { athleteId, date: localMidnight } },
       create: { athleteId, date: localMidnight, ...metrics },
-      update: { ...metrics },
+      // A null means "Garmin gave us nothing this time", not "the value is
+      // gone" — don't wipe a good stored value (e.g. Body Battery) with it.
+      update: Object.fromEntries(Object.entries(metrics).filter(([, v]) => v !== null)),
     });
     dailyMetricsSynced++;
   }
 
   const workoutsSynced = await syncWorkouts(client, athleteId);
-  const activitiesSynced = await syncGarminActivities(athleteId, athlete);
+  const activitiesSynced = await syncGarminActivities(client, athleteId, athlete);
 
   await db.garminAccount.update({
     where: { id: account.id },

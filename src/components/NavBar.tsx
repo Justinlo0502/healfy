@@ -16,6 +16,7 @@ import {
   RefreshCw,
   Scale,
   Settings,
+  Target,
   TrendingUp,
   XCircle,
 } from "lucide-react";
@@ -27,6 +28,7 @@ const LINKS = [
   { href: "/dashboard/planned", label: "Planned", icon: ClipboardList },
   { href: "/dashboard/program", label: "Program", icon: CalendarDays },
   { href: "/dashboard/lifts", label: "Lifts", icon: Dumbbell },
+  { href: "/dashboard/progress", label: "Progress", icon: Target },
   { href: "/dashboard/body", label: "Body", icon: Scale },
   { href: "/dashboard/coach", label: "Coach", icon: Flame },
   { href: "/settings", label: "Settings", icon: Settings },

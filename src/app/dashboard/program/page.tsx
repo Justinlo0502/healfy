@@ -6,9 +6,11 @@ import {
   PROGRAM_WEEKS,
   cueFor,
   dayDate,
+  exercisesFor,
   rampLabel,
   restLabel,
   schemeLabel,
+  supersetPosition,
   weekForDate,
   type ProgramDay,
   type Tier,
@@ -79,8 +81,9 @@ function DayCard({ day, week, today }: { day: ProgramDay; week: number; today: s
       <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note}</p>
 
       <ul>
-        {day.exercises.map((ex, i) => {
+        {exercisesFor(day, week).map((ex, i, list) => {
           const rx = ex.rx(week);
+          const pos = ex.superset ? supersetPosition(list, i) : null;
           const ramp = ex.ramp?.(week);
           const rest = restLabel(ex.restSeconds);
           return (
@@ -94,7 +97,14 @@ function DayCard({ day, week, today }: { day: ProgramDay; week: number; today: s
                 {TIER_LABEL[ex.tier]}
               </span>
               <div className="min-w-0">
-                <p className="font-semibold">{ex.name}</p>
+                <p className="font-semibold">
+                  {ex.name}
+                  {pos ? (
+                    <span className="ml-2 rounded bg-surface-2 px-1.5 py-0.5 align-middle font-mono text-[11px] font-semibold text-muted">
+                      Superset {pos}
+                    </span>
+                  ) : null}
+                </p>
                 <p className="mt-0.5 max-w-prose text-[13px] leading-snug text-muted">{cueFor(ex, week)}</p>
                 {ex.primer?.length ? (
                   <p className="mt-1 font-mono text-xs text-muted">

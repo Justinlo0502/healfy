@@ -1,5 +1,5 @@
-import { Dumbbell } from "lucide-react";
-import { formatDate, formatDuration } from "@/lib/format";
+import { ChevronDown, Dumbbell } from "lucide-react";
+import { formatDate, formatDuration, kgToLb } from "@/lib/format";
 import type { HevyExercise } from "@/lib/hevy";
 
 type HevyWorkoutRowData = {
@@ -9,6 +9,18 @@ type HevyWorkoutRowData = {
   endTime: Date | null;
   exercises: unknown;
 };
+
+type SetData = HevyExercise["sets"][number];
+
+/** One set as "225.00 lb × 6" (weights always pounds, 2 decimals); warm-ups get a "W" prefix. */
+function setLabel(s: SetData): string {
+  const prefix = s.type === "warmup" ? "W " : "";
+  const weight = s.weight_kg != null && s.weight_kg > 0 ? `${kgToLb(s.weight_kg).toFixed(2)} lb` : null;
+  if (s.reps != null) return `${prefix}${weight ? `${weight} × ` : "BW × "}${s.reps}`;
+  if (s.duration_seconds != null) return `${prefix}${s.duration_seconds} s`;
+  if (s.distance_meters != null) return `${prefix}${weight ? `${weight} · ` : ""}${s.distance_meters} m`;
+  return `${prefix}${weight ?? "—"}`;
+}
 
 export default function HevyWorkoutListItem({ workout }: { workout: HevyWorkoutRowData }) {
   const exercises = (workout.exercises as HevyExercise[] | null) ?? [];
@@ -20,8 +32,8 @@ export default function HevyWorkoutListItem({ workout }: { workout: HevyWorkoutR
   const topExercises = exercises.slice(0, 3).map((e) => e.title);
 
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-      <div className="flex items-center gap-3.5">
+    <details className="group rounded-2xl border border-line bg-surface shadow-card">
+      <summary className="flex cursor-pointer list-none items-center gap-3.5 p-4 [&::-webkit-details-marker]:hidden">
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
           <Dumbbell className="h-4 w-4" strokeWidth={2.5} />
         </div>
@@ -49,7 +61,17 @@ export default function HevyWorkoutListItem({ workout }: { workout: HevyWorkoutR
             <p className="mt-1.5 truncate text-xs text-muted">{topExercises.join(", ")}</p>
           ) : null}
         </div>
-      </div>
-    </div>
+        <ChevronDown className="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180" />
+      </summary>
+
+      <ul className="flex flex-col gap-2.5 border-t border-line px-4 py-3">
+        {exercises.map((e, i) => (
+          <li key={`${e.exercise_template_id}-${i}`}>
+            <p className="text-sm font-semibold">{e.title}</p>
+            <p className="mt-0.5 font-mono text-xs tabular-nums text-muted">{e.sets.map(setLabel).join("  ·  ")}</p>
+          </li>
+        ))}
+      </ul>
+    </details>
   );
 }

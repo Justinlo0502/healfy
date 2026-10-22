@@ -24,6 +24,7 @@ import {
   PROGRAM_WEEKS,
   cueFor,
   dayDate,
+  exercisesFor,
   hevyRoutineTitle,
   rampLabel,
   restLabel,
@@ -98,7 +99,12 @@ function buildPayload(
     };
   });
 
-  const main = day.exercises.flatMap((ex) => {
+  // Accessories sharing a superset tag get one Hevy superset_id; only the last member keeps its rest timer.
+  const exercises = exercisesFor(day, week);
+  const supersetIds = new Map<string, number>();
+  for (const ex of exercises) if (ex.superset && !supersetIds.has(ex.superset)) supersetIds.set(ex.superset, supersetIds.size);
+
+  const main = exercises.flatMap((ex) => {
     const t = resolve(ex.hevyTitle);
     const rx = ex.rx(week);
     // Prep moves (scapular pull-ups) go in as their own Hevy exercise right before the lift they prime.
@@ -120,6 +126,7 @@ function buildPayload(
       {
         exercise_template_id: t.id,
         rest_seconds: ex.restSeconds,
+        ...(ex.superset ? { superset_id: supersetIds.get(ex.superset) } : {}),
         notes: exerciseNotes(ex, week),
         sets: [...ramp, ...work],
       },

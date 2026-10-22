@@ -159,6 +159,61 @@ export default async function LiftsPage() {
         </div>
       </div>
 
+      {/* Workout history first, then the aggregate stats */}
+      <div className="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
+        <section>
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted">
+            <Zap className="h-4 w-4" /> Recent Workouts
+          </h2>
+          <ul className="mt-3 flex flex-col gap-2">
+            {recentWorkouts.map((workout) => (
+              <li key={workout.id}>
+                <HevyWorkoutListItem workout={workout} />
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section>
+          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted">
+            <Folder className="h-4 w-4" /> Routines
+          </h2>
+          <div className="mt-3 flex flex-col gap-4">
+            {folders.map((folder) => {
+              const folderRoutines = routinesByFolder.get(folder.id) ?? [];
+              if (folderRoutines.length === 0) return null;
+              return (
+                <div key={folder.id} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
+                  <p className="text-xs font-semibold text-muted">{folder.title}</p>
+                  <ul className="mt-2 flex flex-col gap-1.5">
+                    {folderRoutines.map((r) => (
+                      <li key={r.id} className="text-sm font-medium">
+                        {r.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
+
+            {unfiledRoutines.length > 0 ? (
+              <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
+                <p className="text-xs font-semibold text-muted">Unfiled</p>
+                <ul className="mt-2 flex flex-col gap-1.5">
+                  {unfiledRoutines.map((r) => (
+                    <li key={r.id} className="text-sm font-medium">
+                      {r.title}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
+            {routines.length === 0 ? <p className="text-sm text-muted">No routines synced yet.</p> : null}
+          </div>
+        </section>
+      </div>
+
       {/* Stat tiles */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-5">
         {[
@@ -262,61 +317,6 @@ export default async function LiftsPage() {
           </div>
         </section>
       ) : null}
-
-      {/* Recent activity */}
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-[1fr_320px]">
-        <section>
-          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted">
-            <Zap className="h-4 w-4" /> Recent Workouts
-          </h2>
-          <ul className="mt-3 flex flex-col gap-2">
-            {recentWorkouts.map((workout) => (
-              <li key={workout.id}>
-                <HevyWorkoutListItem workout={workout} />
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section>
-          <h2 className="flex items-center gap-1.5 text-sm font-semibold text-muted">
-            <Folder className="h-4 w-4" /> Routines
-          </h2>
-          <div className="mt-3 flex flex-col gap-4">
-            {folders.map((folder) => {
-              const folderRoutines = routinesByFolder.get(folder.id) ?? [];
-              if (folderRoutines.length === 0) return null;
-              return (
-                <div key={folder.id} className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-                  <p className="text-xs font-semibold text-muted">{folder.title}</p>
-                  <ul className="mt-2 flex flex-col gap-1.5">
-                    {folderRoutines.map((r) => (
-                      <li key={r.id} className="text-sm font-medium">
-                        {r.title}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })}
-
-            {unfiledRoutines.length > 0 ? (
-              <div className="rounded-2xl border border-line bg-surface p-4 shadow-card">
-                <p className="text-xs font-semibold text-muted">Unfiled</p>
-                <ul className="mt-2 flex flex-col gap-1.5">
-                  {unfiledRoutines.map((r) => (
-                    <li key={r.id} className="text-sm font-medium">
-                      {r.title}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-
-            {routines.length === 0 ? <p className="text-sm text-muted">No routines synced yet.</p> : null}
-          </div>
-        </section>
-      </div>
 
       <p className="mt-8 text-center text-xs text-muted">
         {hevyAccount.lastSyncedAt ? `Last synced ${formatDateTime(hevyAccount.lastSyncedAt)}` : null}
