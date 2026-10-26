@@ -116,11 +116,11 @@ const SQUAT_VOLUME = [135, 145, 155, 160, 165, 135];
 /** Friday deadlift 5×3+: week 1 was 225 × 3, 3, 3, 3, 6, well above the planned 190, so the ladder restarted from there. Week 2's 235 was skipped (no deadlift logged Oct 16), so week 3 repeats 235 and the ladder ends at 260. */
 const DEADLIFT_T1 = [225, 235, 235, 245, 255, 260];
 
-/** Friday pull-up 3×10, added load in lb: week 2 stayed bodyweight (11, 11, 8), so +5 starts in week 3. */
-const PULLUP_T2 = [0, 0, 5, 10, 15, 20];
+/** Friday pull-up 3×10, added load in lb: week 2 stayed bodyweight (11, 11, 8) and week 3 was BW × 11, 11, 11 (the +5 was not added), so +5 starts in week 4. */
+const PULLUP_T2 = [0, 0, 5, 5, 10, 15];
 
-/** Sunday weighted pull-up 5×3+, added load in lb: week 1 was +45; week 2 was skipped, so week 3 repeats +50. */
-const PULLUP_T1 = [45, 50, 50, 55, 60, 65];
+/** Sunday weighted pull-up 5×3+, added load in lb: week 1 was +45; weeks 2 and 3 were skipped, so week 4 repeats +50. */
+const PULLUP_T1 = [45, 50, 50, 50, 55, 60];
 
 /** Monday squat 5×3+: week 1 was 160 with an 8-rep AMRAP, so week 2 jumped; week 2 was 185 (planned 175) with another 8-rep AMRAP, week 3 was 205 (planned 195) with a 5-rep AMRAP, so +5 a week from there. */
 const SQUAT_T1 = [160, 185, 205, 210, 215, 220];
@@ -217,7 +217,13 @@ export const PROGRAM_DAYS: ProgramDay[] = [
                 : "Aim for 8 on every set. If a set drops to 6–7, keep the weight next week until every set hits 8.",
       },
       {
-        name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T1", restSeconds: 150,
+        name: "Leg Press · back-injury sub", hevyTitle: "Leg Press (Machine)", tier: "T2", restSeconds: 120, weeks: [4],
+        rx: fixed({ sets: 4, reps: 10, repsLabel: "8–10", weightLb: 180, loadLabel: "start 180 lb" }),
+        ramp: () => [{ weightLb: 90, reps: 10 }],
+        cue: "Replaces the back squat this week for the lower back. Back and hips flat on the pad, feet mid-platform, lower only until the hips would start to tuck under, then press. Stop 3 reps shy and keep every rep pain-free: if the back goes over 3/10, drop the weight. 180 is a conservative start from your 2022 logs (220 × 12), so tell me how it felt and I'll adjust.",
+      },
+      {
+        name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T1", restSeconds: 150, weeks: [1, 2, 3, 5, 6],
         rx: (w) => ({ sets: 5, reps: 3, repsLabel: "3+", weightLb: SQUAT_T1[w - 1], loadLabel: lb(SQUAT_T1[w - 1]) }),
         ramp: (w) => barRamp(SQUAT_T1[w - 1]),
         cue: (w) =>
@@ -274,7 +280,12 @@ export const PROGRAM_DAYS: ProgramDay[] = [
             : "Full 2 s pause on the chest with no sinking or bounce, then press. Builds strength off the chest, where most bench misses happen. You did paused 115 × 10 × 3 in February.",
       },
       {
-        name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T2", restSeconds: 150,
+        name: "Leg Extension · back-injury sub", hevyTitle: "Leg Extension (Machine)", tier: "T2", restSeconds: 90, weeks: [4],
+        rx: fixed({ sets: 3, reps: 10, repsLabel: "10–12", weightLb: 130, loadLabel: "start 130 lb" }),
+        cue: "Replaces the squat volume this week: quads with no load on the spine. 1 s squeeze at the top, 3 s down. You last logged 170 × 10 in 2023 and 150 × 10 in 2022, so 130 is an easy re-entry. Leave 2 in the tank, since you paddle tonight.",
+      },
+      {
+        name: "Back Squat", hevyTitle: "Squat (Barbell)", tier: "T2", restSeconds: 150, weeks: [1, 2, 3, 5, 6],
         rx: (w) => ({ sets: 3, reps: 10, weightLb: SQUAT_VOLUME[w - 1], loadLabel: lb(SQUAT_VOLUME[w - 1]) }),
         ramp: () => [{ weightLb: BAR, reps: 10 }],
         cue: (w) =>
@@ -385,10 +396,17 @@ export const PROGRAM_DAYS: ProgramDay[] = [
               ? "You did 150 × 3, 3, 3, 3, 7 on Oct 9, then 160 × 3, 3, 3, 3, 7 on Oct 16. Both 7-rep AMRAPs triggered the +5 lb rule. Last set AMRAP, 1 clean rep left."
               : w === 3
                 ? "Second 7-rep AMRAP in a row at 160, so the +5 lb rule adds an extra 5: 170 this week, then 175 / 180. Last set AMRAP, 1 clean rep left."
+                : w === 4
+                  ? "You did 170 × 3, 3 then 175 × 3, 3, 3 on Oct 23, so the plan stands at 175. With the sore back, keep the arch modest, feet planted and glutes on the bench. Last set AMRAP, 1 clean rep left. If the back complains, stop at 5 × 3 with no AMRAP."
                 : "Last set AMRAP, 1 clean rep left. If you get 6+ reps, add an extra 5 lb to every bench number from next week. If you miss reps, repeat the weight as 6 × 2.",
       },
       {
-        name: "Deadlift (conventional)", hevyTitle: "Deadlift (Barbell)", tier: "T1", restSeconds: 150,
+        name: "Glute Bridge · back-injury sub", hevyTitle: "Glute Bridge", tier: "T2", restSeconds: 90, weeks: [4],
+        rx: fixed({ sets: 4, reps: 12, repsLabel: "12–15", weightLb: null, loadLabel: "bodyweight" }),
+        cue: "Replaces the deadlift this week. Feet flat, ribs down, squeeze the glutes to lift the hips until the body is in a straight line (don't arch the low back), 2 s hold, lower slowly. Keeps the glutes and hamstrings working without loading the spine. When 4 × 15 is easy, hold a dumbbell on the hips.",
+      },
+      {
+        name: "Deadlift (conventional)", hevyTitle: "Deadlift (Barbell)", tier: "T1", restSeconds: 150, weeks: [1, 2, 3, 5, 6],
         rx: (w) => ({ sets: 5, reps: 3, repsLabel: "3+", weightLb: DEADLIFT_T1[w - 1], loadLabel: lb(DEADLIFT_T1[w - 1]) }),
         ramp: (w) => dlRamp(DEADLIFT_T1[w - 1]),
         cue: (w) =>
@@ -407,10 +425,17 @@ export const PROGRAM_DAYS: ProgramDay[] = [
             ? "You did BW × 10, 10, 10 on Oct 9, then BW × 11, 11, 8 on Oct 16 (the +5 lb was not added). Do the scapular pull-ups first, then overhand, dead hang to chin over the bar."
             : w === 3
               ? "Third set dropped to 8 last week, so +5 lb starts now: aim for 10 on every set. Scapular pull-ups first, then overhand, dead hang to chin over the bar. If you miss reps, keep the weight as 3 × 8."
-              : "Scapular pull-ups first, then overhand, dead hang to chin over the bar. +5 lb a week. If you miss reps, keep the weight as 3 × 8.",
+              : w === 4
+                ? "You did BW × 11, 11, 11 on Oct 23 without the planned +5, so +5 lb starts now. Scapular pull-ups first, then overhand, dead hang to chin over the bar, no swinging or kipping with the sore back. If you miss reps, keep the weight as 3 × 8."
+                : "Scapular pull-ups first, then overhand, dead hang to chin over the bar. +5 lb a week. If you miss reps, keep the weight as 3 × 8.",
       },
       {
-        name: "45° Back Extension", hevyTitle: "Back Extension (Weighted Hyperextension)", tier: "T3", restSeconds: 0, superset: "A",
+        name: "Side Plank · back-injury sub", hevyTitle: "Side Plank", tier: "CORE", restSeconds: 0, superset: "A", weeks: [4],
+        rx: fixed({ sets: 3, seconds: 20, repsLabel: "20 s / side", weightLb: null, loadLabel: "bodyweight" }),
+        cue: "Replaces the back extension this week. Superset with the wrist curl: side plank both sides, then straight into the wrist curl, rest 60 s. Knees bent is fine. Hips stacked and lifted, neutral spine. One of the McGill Big 3 for low-back endurance.",
+      },
+      {
+        name: "45° Back Extension", hevyTitle: "Back Extension (Weighted Hyperextension)", tier: "T3", restSeconds: 0, superset: "A", weeks: [1, 2, 3, 5, 6],
         rx: fixed({ sets: 3, reps: 10, repsLabel: "10–15", weightLb: 45, loadLabel: "start 45 lb" }),
         cue: "Superset with the wrist curl: back extension, then straight into the wrist curl, rest 60 s. Hinge at the hips with a neutral spine and a 2 s hold at the top. You did 45 × 10, 10 on Oct 9, then 45 × 11, 11, 11 on Oct 16. Build to 3 × 15 before adding weight. Back endurance for the boat.",
       },
@@ -436,7 +461,9 @@ export const PROGRAM_DAYS: ProgramDay[] = [
             ? "You did +45 × 3, 3, 3, 3 on Oct 11 (20 lb above the plan) and skipped the AMRAP set, so the ladder starts from +45."
             : w === 2
               ? "Skipped on Oct 18, so week 3 repeats this +50. Scapular pull-ups first. Dead hang, shoulders down first, chin clearly over. Last set AMRAP, 1 clean rep left."
-              : "Your #2 lift. Scapular pull-ups first. Dead hang, shoulders down first, chin clearly over. Last set AMRAP, 1 clean rep left. You did +45 × 3, 3, 3, 3 on Oct 11 and skipped the AMRAP, so do the 5th set this time. +5 lb a week; your Aug 10 best was +70 × 3.",
+              : w === 4
+                ? "Skipped again on Oct 25, so week 4 repeats +50. Scapular pull-ups first, controlled reps with no swinging, since the lower back is sore. Dead hang, shoulders down first, chin clearly over. Last set AMRAP, 1 clean rep left. If the belt or the hang bothers the back, drop the load and do 3 × 5 at bodyweight."
+                : "Your #2 lift. Scapular pull-ups first. Dead hang, shoulders down first, chin clearly over. Last set AMRAP, 1 clean rep left. You did +45 × 3, 3, 3, 3 on Oct 11 and skipped the AMRAP, so do the 5th set this time. +5 lb a week; your Aug 10 best was +70 × 3.",
       },
       {
         name: "Chest-Supported Row (Nautilus Upper Back Row)", hevyTitle: "Nautilus Upper Back Row", tier: "T2", restSeconds: 120,
@@ -459,14 +486,22 @@ export const PROGRAM_DAYS: ProgramDay[] = [
         cue: "Superset with the woodchop. Press out, hold 3 s, and don't let the cable twist you. Resists rotation.",
       },
       {
-        name: "Cable Woodchop (high → low)", hevyTitle: "Cable Twist (Up to down)", tier: "CORE", restSeconds: 45, superset: "B",
+        name: "Dead Bug · back-injury sub", hevyTitle: "Dead Bug", tier: "CORE", restSeconds: 45, superset: "B", weeks: [4],
+        rx: fixed({ sets: 3, reps: 8, repsLabel: "8 / side", weightLb: null, loadLabel: "bodyweight" }),
+        cue: "Replaces the woodchop this week, since loaded rotation is the wrong thing for a sore back. Superset with the Pallof press. Low back flat on the floor, extend the opposite arm and leg slowly.",
+      },
+      {
+        name: "Cable Woodchop (high → low)", hevyTitle: "Cable Twist (Up to down)", tier: "CORE", restSeconds: 45, superset: "B", weeks: [1, 2, 3, 5, 6],
         rx: fixed({ sets: 3, reps: 10, repsLabel: "10 / side", weightLb: null, loadLabel: "moderate" }),
         cue: "Superset with the Pallof press. Turn from the hips with the spine braced. It's the paddle stroke pattern done with control.",
       },
       {
         name: "Suitcase Carry", hevyTitle: "Suitcase Carry (Dumbbell)", tier: "CORE", restSeconds: 60,
-        rx: fixed({ sets: 3, meters: 40, repsLabel: "40 m / side", weightLb: 55, loadLabel: "start 55 lb" }),
-        cue: "Walk tall with no lean. Works side-to-side stability and grip.",
+        rx: (w) => ({ sets: 3, meters: 40, repsLabel: "40 m / side", weightLb: w === 4 ? 45 : 55, loadLabel: w === 4 ? "45 lb (lighter)" : "start 55 lb" }),
+        cue: (w) =>
+          w === 4
+            ? "Lighter this week (45 lb) for the sore back. Walk tall with no lean. If the back goes over 3/10, skip it."
+            : "Walk tall with no lean. Works side-to-side stability and grip.",
       },
     ],
   },

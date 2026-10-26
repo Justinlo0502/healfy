@@ -5,6 +5,18 @@ export type ProgramLogEntry = { date: string; title: string; changes: string[] }
 
 export const PROGRAM_LOG: ProgramLogEntry[] = [
   {
+    date: "2026-10-26",
+    title: "Week 4: lower-back injury, no squat or deadlift",
+    changes: [
+      "Week 4 only: no barbell squat or deadlift. Monday's squat is a leg press (4 × 8–10 @ 180 lb), Wednesday's squat volume is a leg extension (3 × 10–12 @ 130 lb), and Friday's deadlift is a glute bridge (4 × 12–15, bodyweight). Loads are conservative starts from your 2022–2023 machine logs, since there is nothing recent.",
+      "Also dropped for the week because they load or twist the spine: Friday's back extension (now a side plank, 3 × 20 s / side) and Sunday's cable woodchop (now a dead bug, 3 × 8 / side). Suitcase carry goes from 55 to 45 lb.",
+      "Squat and deadlift come back in week 5 with their ladders unchanged (Monday squat 215, Wednesday squat 165, deadlift 255 on the old ladder; drop these back a step if the back isn't right). Revisit both once you know how the back feels.",
+      "Friday Oct 23: bench 170 × 3, 3 then 175 × 3, 3, 3, so the plan stands (175 in week 4). No deadlift was logged, so its ladder steps are skipped.",
+      "Friday pull-up: BW × 11, 11, 11 without the +5, so +5 lb starts in week 4 (+5 / 5 / 10 / 15).",
+      "Sunday Oct 25 weighted pull-up was skipped again, so week 4 repeats +50 (then +50 / 55 / 60).",
+    ],
+  },
+  {
     date: "2026-10-21",
     title: "After Week 3 Monday and Wednesday",
     changes: [
