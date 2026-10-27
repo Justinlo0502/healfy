@@ -3,6 +3,7 @@ import { requireAthlete } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { BRIEFINGS, type Briefing } from "@/lib/briefings";
 import { completedSessions, sessionKey } from "@/lib/sessions";
+import { buildSessionReports, type SessionReport as Report } from "@/lib/sessionReport";
 import {
   PROGRAM_DAYS,
   PROGRAM_NAME,
@@ -16,31 +17,14 @@ import {
   supersetPosition,
   weekForDate,
   type ProgramDay,
-  type Tier,
 } from "@/lib/program";
 import { CalendarDays, CircleCheck, Waves } from "lucide-react";
+import SessionReport from "./SessionReport";
 import WeekTabs from "./WeekTabs";
+import { TIER_LABEL, TIER_STYLE } from "./tiers";
 
 // The current 6-week lifting program, rendered from src/lib/program.ts —
 // the same definition scripts/push-comeback-block.ts pushes to Hevy.
-
-const TIER_STYLE: Record<Tier, string> = {
-  T1: "bg-foreground text-background",
-  T2: "border-[1.5px] border-foreground text-foreground",
-  T3: "bg-surface-2 text-foreground",
-  ELBOW: "bg-warn-bg text-warn",
-  CORE: "bg-good-bg text-good",
-  MOBILITY: "border-[1.5px] border-dashed border-accent2 text-accent2",
-};
-
-const TIER_LABEL: Record<Tier, string> = {
-  T1: "T1",
-  T2: "T2",
-  T3: "T3",
-  ELBOW: "ELBOW",
-  CORE: "CORE",
-  MOBILITY: "MOBIL",
-};
 
 const WEEK_STRIP: { day: string; text: string; paddle?: boolean; home?: boolean; rest?: boolean }[] = [
   { day: "Mon", text: "Bench volume · Squat heavy · DB press", paddle: true },
@@ -56,44 +40,19 @@ function shortDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-const VERDICT_STYLE: Record<Briefing["verdict"], { label: string; className: string }> = {
-  ahead: { label: "Ahead of plan", className: "bg-good-bg text-good" },
-  "on-plan": { label: "On plan", className: "bg-surface-2 text-foreground" },
-  mixed: { label: "Mixed", className: "bg-warn-bg text-warn" },
-  behind: { label: "Behind plan", className: "bg-warn-bg text-warn" },
-};
-
-function BriefingBlock({ briefing }: { briefing: Briefing }) {
-  const verdict = VERDICT_STYLE[briefing.verdict];
-  return (
-    <details className="border-b border-line px-5 py-2.5 text-sm">
-      <summary className="cursor-pointer select-none font-semibold">
-        Briefing
-        <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-semibold ${verdict.className}`}>
-          {verdict.label}
-        </span>
-      </summary>
-      <p className="mt-2 max-w-prose">{briefing.summary}</p>
-      <ul className="mt-2 flex max-w-prose list-disc flex-col gap-1.5 pl-5 text-[13px] text-muted">
-        {briefing.highlights.map((h, i) => (
-          <li key={i}>{h}</li>
-        ))}
-      </ul>
-    </details>
-  );
-}
-
 function DayCard({
   day,
   week,
   today,
   done,
+  report,
   briefing,
 }: {
   day: ProgramDay;
   week: number;
   today: string;
   done: boolean;
+  report?: Report;
   briefing?: Briefing;
 }) {
   const date = dayDate(week, day);
@@ -128,8 +87,6 @@ function DayCard({
       </div>
 
       <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note}</p>
-
-      {briefing ? <BriefingBlock briefing={briefing} /> : null}
 
       <ul>
         {exercisesFor(day, week).map((ex, i, list) => {
@@ -173,6 +130,8 @@ function DayCard({
           );
         })}
       </ul>
+
+      {report ? <SessionReport report={report} briefing={briefing} /> : null}
     </article>
   );
 }
@@ -196,18 +155,29 @@ export default async function ProgramPage() {
   const initialTab = currentWeek ? currentWeek - 1 : weekNow > PROGRAM_WEEKS ? PROGRAM_WEEKS - 1 : 0;
 
   // A session is done once a workout titled after its routine is logged in Hevy.
-  const logged = await db.hevyWorkout.findMany({
-    where: { athleteId: athlete.id, title: { startsWith: "CB " } },
-    select: { title: true, startTime: true },
-  });
+  const [logged, routines, templates] = await Promise.all([
+    db.hevyWorkout.findMany({
+      where: { athleteId: athlete.id, title: { startsWith: "CB " } },
+      select: { title: true, startTime: true, endTime: true, exercises: true },
+    }),
+    db.hevyRoutine.findMany({
+      where: { athleteId: athlete.id, title: { startsWith: "CB " } },
+      select: { title: true, exercises: true },
+    }),
+    db.hevyExerciseTemplate.findMany({
+      where: { athleteId: athlete.id },
+      select: { title: true, primaryMuscleGroup: true },
+    }),
+  ]);
   const done = completedSessions(logged);
+  const reports = buildSessionReports({ workouts: logged, routines, templates });
 
   const weeks = Array.from({ length: PROGRAM_WEEKS }, (_, i) => i + 1);
   const panels = weeks.map((week) => (
     <div key={week} className="flex flex-col gap-4">
       {PROGRAM_DAYS.map((day) => {
         const key = sessionKey(week, day.key);
-        return <DayCard key={day.key} day={day} week={week} today={today} done={done.has(key)} briefing={BRIEFINGS[key]} />;
+        return <DayCard key={day.key} day={day} week={week} today={today} done={done.has(key)} report={reports.get(key)} briefing={BRIEFINGS[key]} />;
       })}
     </div>
   ));

@@ -106,7 +106,7 @@ skipped" if relevant), and one change per bullet, each naming the logged sets it
 1. `npx tsc --noEmit`, fix any errors.
 2. `npx tsx scripts/push-comeback-block.ts --dry-run`, then the real run. It only updates sessions dated today or later and leaves
    finished ones as logged. On a Hevy 429, resume with `--from-week N` (and `--day Mon` to shrink the job).
-3. The check mark needs nothing: `/dashboard/program` shows it on any session with a logged Hevy workout, and the briefing appears under it.
+3. The check mark needs nothing: `/dashboard/program` shows it on any session with a logged Hevy workout, and a "Planned vs done" report appears under the planned workout. The sets, statuses and time come live from the Hevy log (`src/lib/sessionReport.ts`); your briefing supplies the verdict, summary and highlights.
 
 ## 8. Reply to the user
 
