@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 import { requireAthlete } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { BRIEFINGS, type Briefing } from "@/lib/briefings";
+import { completedSessions, sessionKey } from "@/lib/sessions";
 import {
   PROGRAM_DAYS,
   PROGRAM_NAME,
@@ -15,7 +18,7 @@ import {
   type ProgramDay,
   type Tier,
 } from "@/lib/program";
-import { CalendarDays, Waves } from "lucide-react";
+import { CalendarDays, CircleCheck, Waves } from "lucide-react";
 import WeekTabs from "./WeekTabs";
 
 // The current 6-week lifting program, rendered from src/lib/program.ts —
@@ -53,7 +56,46 @@ function shortDate(iso: string): string {
   return new Date(`${iso}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
-function DayCard({ day, week, today }: { day: ProgramDay; week: number; today: string }) {
+const VERDICT_STYLE: Record<Briefing["verdict"], { label: string; className: string }> = {
+  ahead: { label: "Ahead of plan", className: "bg-good-bg text-good" },
+  "on-plan": { label: "On plan", className: "bg-surface-2 text-foreground" },
+  mixed: { label: "Mixed", className: "bg-warn-bg text-warn" },
+  behind: { label: "Behind plan", className: "bg-warn-bg text-warn" },
+};
+
+function BriefingBlock({ briefing }: { briefing: Briefing }) {
+  const verdict = VERDICT_STYLE[briefing.verdict];
+  return (
+    <details className="border-b border-line px-5 py-2.5 text-sm">
+      <summary className="cursor-pointer select-none font-semibold">
+        Briefing
+        <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[11px] font-semibold ${verdict.className}`}>
+          {verdict.label}
+        </span>
+      </summary>
+      <p className="mt-2 max-w-prose">{briefing.summary}</p>
+      <ul className="mt-2 flex max-w-prose list-disc flex-col gap-1.5 pl-5 text-[13px] text-muted">
+        {briefing.highlights.map((h, i) => (
+          <li key={i}>{h}</li>
+        ))}
+      </ul>
+    </details>
+  );
+}
+
+function DayCard({
+  day,
+  week,
+  today,
+  done,
+  briefing,
+}: {
+  day: ProgramDay;
+  week: number;
+  today: string;
+  done: boolean;
+  briefing?: Briefing;
+}) {
   const date = dayDate(week, day);
   const isToday = date === today;
   return (
@@ -67,6 +109,13 @@ function DayCard({ day, week, today }: { day: ProgramDay; week: number; today: s
             {isToday ? <span className="ml-2 font-semibold text-accent">Today</span> : null}
           </p>
           <h3 className="mt-0.5 text-lg font-semibold">
+            {done ? (
+              <CircleCheck
+                className="mr-1.5 inline-block h-5 w-5 align-[-3px] text-good"
+                strokeWidth={2.5}
+                aria-label="Session done"
+              />
+            ) : null}
             {day.title}
             {day.paddle ? (
               <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-warn-bg px-2 py-0.5 align-middle font-sans text-[11px] font-semibold text-warn">
@@ -79,6 +128,8 @@ function DayCard({ day, week, today }: { day: ProgramDay; week: number; today: s
       </div>
 
       <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note}</p>
+
+      {briefing ? <BriefingBlock briefing={briefing} /> : null}
 
       <ul>
         {exercisesFor(day, week).map((ex, i, list) => {
@@ -144,12 +195,20 @@ export default async function ProgramPage() {
   const currentWeek = weekNow >= 1 && weekNow <= PROGRAM_WEEKS ? weekNow : null;
   const initialTab = currentWeek ? currentWeek - 1 : weekNow > PROGRAM_WEEKS ? PROGRAM_WEEKS - 1 : 0;
 
+  // A session is done once a workout titled after its routine is logged in Hevy.
+  const logged = await db.hevyWorkout.findMany({
+    where: { athleteId: athlete.id, title: { startsWith: "CB " } },
+    select: { title: true, startTime: true },
+  });
+  const done = completedSessions(logged);
+
   const weeks = Array.from({ length: PROGRAM_WEEKS }, (_, i) => i + 1);
   const panels = weeks.map((week) => (
     <div key={week} className="flex flex-col gap-4">
-      {PROGRAM_DAYS.map((day) => (
-        <DayCard key={day.key} day={day} week={week} today={today} />
-      ))}
+      {PROGRAM_DAYS.map((day) => {
+        const key = sessionKey(week, day.key);
+        return <DayCard key={day.key} day={day} week={week} today={today} done={done.has(key)} briefing={BRIEFINGS[key]} />;
+      })}
     </div>
   ));
 

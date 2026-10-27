@@ -6,6 +6,15 @@ export type ProgramLogEntry = { date: string; title: string; changes: string[] }
 export const PROGRAM_LOG: ProgramLogEntry[] = [
   {
     date: "2026-10-26",
+    title: "Briefings added for Weeks 1 to 3, no plan changes",
+    changes: [
+      "Hevy sync found no new workouts since the Week 3 Friday session (Oct 23), so no loads were changed. The Week 4 plan below stands.",
+      "Wrote briefings for all ten logged sessions (W1 Mon through W3 Fri). Sessions over the 75 min cap: W1 Mon 81, W1 Wed 77, W1 Fri 82, W2 Wed 83.",
+      "Wednesday face pull has been swapped for the Nautilus rear delt fly twice (Oct 14, Oct 21), and the plan already uses it. Friday hammer curl was added twice (Oct 9, Oct 16) and is not programmed, because it has bothered the elbow.",
+    ],
+  },
+  {
+    date: "2026-10-26",
     title: "Week 4: lower-back injury, no squat or deadlift",
     changes: [
       "Week 4 only: no barbell squat or deadlift. Monday's squat is a leg press (4 × 8–10 @ 180 lb), Wednesday's squat volume is a leg extension (3 × 10–12 @ 130 lb), and Friday's deadlift is a glute bridge (4 × 12–15, bodyweight). Loads are conservative starts from your 2022–2023 machine logs, since there is nothing recent.",
