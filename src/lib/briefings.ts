@@ -131,4 +131,50 @@ export const BRIEFINGS: Record<string, Briefing> = {
       "Back extension and wrist curl were not logged. Nautilus pec fly was added (50 × 8, 8, 10).",
     ],
   },
+  "W4-Mon": {
+    date: "2026-11-01",
+    verdict: "behind",
+    summary: "Bench volume hit all three prescribed sets and the back squat was swapped for a machine leg press, then the leg curl was skipped. The session ran 77 min, over the 75 min cap.",
+    highlights: [
+      "Bench volume: 145 × 8, 8, 8, 6 against 3 × 8 (e1RM 183.7). The three prescribed sets all hit 8; the fourth set of 6 was extra, so week 5 goes to 150.",
+      "Back squat: not logged. Leg press (machine) 180 × 10, 10, 10 was done instead, which matches the week 4 back-injury plan. The squat returns in week 5 at 215, so drop it a step if the back is not right.",
+      "Seated DB shoulder press: 40s × 9, 8, 8 against 3 × 6 (e1RM 52). Every set cleared the target, so 45s next.",
+      "Triceps rope pushdown: 55 × 6, 4 then 44 × 9, well above the planned 25. Reverse wrist curl: 10 lb × 16, 16, two of three sets.",
+      "Seated leg curl was not logged for the second week running. A Nautilus upper back row (130 × 8, 8) was added for the second week in a row, which is part of why the session ran long.",
+    ],
+  },
+  "W4-Wed": {
+    date: "2026-11-01",
+    verdict: "ahead",
+    summary: "Every set of paused bench was hit, and the incline press went 10 lb over plan. 59 min, well inside the cap.",
+    highlights: [
+      "Paused bench: 140 × 4, 4, 4, 4 as prescribed (e1RM 158.7). Plan for week 5 stands at 145.",
+      "Smith incline press: 80 × 8, then 90 × 8, 8 against 3 × 8 @ 80 (e1RM 114). 90 is the new base.",
+      "Overhead triceps extension: 35 × 8, 8, 8 against 28 planned, so it stays at 35 and builds reps.",
+      "Rear delt fly was done on the cable machine: 15 × 7, then 10 × 6, 7. It is a different machine from the planned Nautilus rear delt fly, so no load change.",
+      "The leg extension that replaced squat volume this week was not logged.",
+    ],
+  },
+  "W4-Fri": {
+    date: "2026-11-01",
+    verdict: "mixed",
+    summary: "Bench heavy was 10 lb over the plan but the AMRAP only reached 2, and the pull-up fell to 6 on the last set. No deadlift or glute bridge was logged. 45 min.",
+    highlights: [
+      "Bench heavy: 185 × 2, 3, 3, 2, 2 against 5 × 2+ @ 185 in the routine (e1RM 203.5 against an expected 181.5). The AMRAP set was 2, below 3, so 185 repeats next week.",
+      "Pull-up: BW × 12, 12, 6 against 3 × 6 @ +5. The +5 was not added again, and the last set dropped from 12 to 6. +5 starts in week 5.",
+      "Deadlift (and its glute bridge sub) was not logged, so the ladder stays at 255.",
+      "45° back extension: 70 × 6, 8, 8 against 45 planned. Hammer curl 25 × 8, 8, 8 was added again (the third time), which has flared the elbow before. Nautilus pec fly 50 × 10 was added.",
+    ],
+  },
+  "W4-Sun": {
+    date: "2026-11-01",
+    verdict: "ahead",
+    summary: "Weighted pull-up held +50 on all five sets and the row was 10 lb over plan, but the core superset was replaced and the suitcase carry was skipped. 52 min.",
+    highlights: [
+      "Weighted pull-up: +50 × 3, 3, 3, 3, 3 against the +40 in the routine. AMRAP 3, e1RM 55 against an expected 44. Every set hit 3+, so +5 next week.",
+      "Chest-supported row: 130 × 6, 6, 6 against 3 × 8 @ 100 (e1RM 156). Short of 8 on every set, so 130 repeats.",
+      "Lateral raise 20s × 7, 8, 8 and incline curl 20s × 6, 6, 6 were both well above the planned 15s but short of the rep range. They stay at 20s and build reps.",
+      "Pallof press and woodchop were not logged. A cable twist (20 × 10 × 3) and weighted sit-ups (25 × 10 × 3) were done instead, and the suitcase carry was skipped.",
+    ],
+  },
 };

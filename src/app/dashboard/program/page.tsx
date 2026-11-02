@@ -86,7 +86,7 @@ function DayCard({
         <p className="font-mono text-xs text-muted">≈{day.minutes} min</p>
       </div>
 
-      <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note}</p>
+      <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note(week)}</p>
 
       <ul>
         {exercisesFor(day, week).map((ex, i, list) => {

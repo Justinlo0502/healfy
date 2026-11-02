@@ -89,7 +89,7 @@ function buildPayload(
     return t;
   };
 
-  const warmup = day.warmup.map((ex) => {
+  const warmup = day.warmup(week).map((ex) => {
     const t = resolve(ex.hevyTitle);
     return {
       exercise_template_id: t.id,

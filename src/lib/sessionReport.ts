@@ -7,7 +7,7 @@ import type { HevyExercise, HevySet } from "@/lib/hevy";
 import { epley1RM } from "@/lib/hevyInsights";
 import { kgToLb } from "@/lib/format";
 import { sessionKey, sessionOf, type SessionRef } from "@/lib/sessions";
-import { PROGRAM_DAYS, dayDate, exercisesFor, type DayKey, type ProgramExercise } from "@/lib/program";
+import { PROGRAM_DAYS, allWarmupTitles, dayDate, exercisesFor, type DayKey, type ProgramExercise } from "@/lib/program";
 
 const LB_TO_KG = 0.45359237;
 const r1 = (n: number) => Math.round(n * 10) / 10;
@@ -139,7 +139,7 @@ export function buildSessionReports({ workouts: allWorkouts, routines: routineRo
             }) as unknown as HevyExercise
         );
     // Warm-up moves (some early routines stored them as normal sets) are not part of the analysis.
-    const warmupTitles = new Set(day.warmup.flatMap((w) => [w.hevyTitle, ...(w.primer ?? []).map((p) => p.hevyTitle)]));
+    const warmupTitles = new Set(allWarmupTitles(day));
     for (const e of day.exercises) for (const p of e.primer ?? []) warmupTitles.add(p.hevyTitle);
     const withWork = plannedEx.filter((e) => workingSets(e).length > 0 && !warmupTitles.has(e.title));
     // Program entry for tier/AMRAP info, matched by Hevy title within the day (moves since removed have none).

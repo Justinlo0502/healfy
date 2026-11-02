@@ -1,7 +1,7 @@
 ---
 name: healfy-update
 description: Post-workout update for the Comeback Block. Use when the user's message starts with "update:" (or says "healfy update"). Syncs Hevy, briefs every newly logged session, revises the remaining weeks' loads and exercises from the logged weights, comments and swaps, refreshes expected-vs-actual 1RM and PR outlook, and pushes the changes to Hevy. Done sessions get a check mark on /dashboard/program automatically.
-allowed-tools: Bash(npx tsx scripts/healfy-update.ts*) Bash(npx tsx scripts/push-comeback-block.ts*) Bash(npx tsc --noEmit*)
+allowed-tools: Bash(npx tsx scripts/healfy-update.ts*) Bash(npx tsx scripts/routine-cleanup.ts*) Bash(npx tsx scripts/push-comeback-block.ts*) Bash(npx tsc --noEmit*)
 ---
 
 # healfy update
@@ -108,8 +108,24 @@ skipped" if relevant), and one change per bullet, each naming the logged sets it
    finished ones as logged. On a Hevy 429, resume with `--from-week N` (and `--day Mon` to shrink the job).
 3. The check mark needs nothing: `/dashboard/program` shows it on any session with a logged Hevy workout, and a "Planned vs done" report appears under the planned workout. The sets, statuses and time come live from the Hevy log (`src/lib/sessionReport.ts`); your briefing supplies the verdict, summary and highlights.
 
-## 8. Reply to the user
+## 8. Clean up Hevy's routine list
+
+Hevy's public API cannot delete routines (`DELETE /v1/routines/:id` returns 404, confirmed), so never try. Run:
+
+```
+npx tsx scripts/routine-cleanup.ts
+```
+
+It reads Hevy and lists what the user should delete by hand: routines for past sessions (done or skipped) and stale duplicate copies of
+upcoming sessions (an older copy can show out-of-date weights because the push script only updates one). It changes nothing. Never delete
+the local `HevyRoutine` rows: the program page and the update report read them as the plan each past session was done against.
+
+Do not re-list a long checklist every time: give the count, name the most recent past sessions to delete, and say the full list comes
+from the script. If the user asks you to do the deleting, say it is only possible by hand in the Hevy app or website, and offer to
+walk through it in the browser only if they want that.
+
+## 9. Reply to the user
 
 Short and in this order: one line per briefed session (verdict + the single most important fact), what changed in the plan and why
-(grouped by lift), substitutions acted on or questions to answer, the PR outlook, and anything the push did not finish. Do not paste
-the raw report.
+(grouped by lift), substitutions acted on or questions to answer, the PR outlook, how many Hevy routines are ready to delete by hand,
+and anything the push did not finish. Do not paste the raw report.

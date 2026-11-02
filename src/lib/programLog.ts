@@ -5,6 +5,21 @@ export type ProgramLogEntry = { date: string; title: string; changes: string[] }
 
 export const PROGRAM_LOG: ProgramLogEntry[] = [
   {
+    date: "2026-11-01",
+    title: "After Week 4: new warm-ups, week 5 loads",
+    changes: [
+      "Warm-ups now rotate by day and week for weeks 5 and 6. Band pull apart and shoulder dislocators stay in every gym warm-up for the shoulders. Elephant walk is in every one as well. The three other moves change by day: greatest stretch into hip flexor stretch, pigeon pose, deep squat hold, lateral lunge, spiderman lunge, 90/90 switches, lizard lunge, open book, inchworm, thread the needle and cat-camel. The old fixed floor routine (cat-camel, thread the needle, bird dog, fire hydrant) is gone. Thursday now ends its warm-up with an elephant walk.",
+      "Bench volume stays on plan at 150 in week 5: 145 × 8, 8, 8 on Oct 26 hit all three prescribed sets (the fourth set of 6 was extra). Volume stays at 3 sets.",
+      "Bench heavy repeats 185 in week 5: 185 × 2, 3, 3, 2, 2 on Oct 30, and the AMRAP of 2 is below 3. The rest of the ladder is unchanged, with week 6 as the max test.",
+      "Seated DB press goes to 45s: 40s × 9, 8, 8 on Oct 26. Smith incline press goes to 90: 80 × 8, then 90 × 8, 8 on Oct 28. Overhead triceps extension goes to 35: 35 × 8, 8, 8 on Oct 28.",
+      "Triceps rope pushdown is 50 in week 5: 55 × 6, 4 then 44 × 9 on Oct 26. Reverse wrist curl stays at 10 lb (16, 16, only two sets).",
+      "Pull-up (Friday) restarts the added load at +5 in week 5 (+5 / 5 / 10 from there): BW × 12, 12, 6 on Oct 30, with the +5 not added for the second week.",
+      "Back extension is 70: 70 × 6, 8, 8 on Oct 30. Row is 130 (130 × 6, 6, 6 on Nov 1), lateral raise and incline curl are 20s (20s × 7, 8, 8 and 6, 6, 6 on Nov 1). Weighted pull-up goes to +55 as already planned after +50 × 3 × 5 on Nov 1 (AMRAP 3).",
+      "Back squat stays at 215 in week 5. It was not logged in week 4 (leg press instead), so this is a decision for you: drop a step if the back is not right.",
+      "Open questions: leg curl has been skipped twice, so say if you want it dropped. Hammer curl was added on Friday for the third time and is not programmed, because it has flared the elbow before.",
+    ],
+  },
+  {
     date: "2026-10-26",
     title: "Briefings added for Weeks 1 to 3, no plan changes",
     changes: [
