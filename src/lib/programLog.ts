@@ -5,6 +5,31 @@ export type ProgramLogEntry = { date: string; title: string; changes: string[] }
 
 export const PROGRAM_LOG: ProgramLogEntry[] = [
   {
+    date: "2026-11-08",
+    title: "After Week 5 Wednesday, Friday and Sunday",
+    changes: [
+      "Bench max test (week 6 Friday): 185 × 3, 3, 3, 3, 3 on Nov 6 gives an e1RM of 203.5. Suggested attempts are an opener of 195, then 205, then 210–215 only if the second moves fast. A 185 single was added to the warm-up ramp.",
+      "Deadlift 275 × 3, 2, 2 on Nov 6 (only three sets, planned 255), so a set fell short of 3 and week 6 repeats 275 instead of the planned 260. The session ran 85 min, so no accessories are added.",
+      "Friday pull-up BW × 10, 10, 10 hit every set, so +5 lb starts in week 6 (it was planned at +10). Back extension 80 × 8, 8, 8 makes 80 the base. Wrist curl was one set of 15, so it stays at 15.",
+      "Weighted pull-up +55 × 3, 3, 3 on Nov 8 was only three of five sets, so week 6 repeats +55 instead of going to +60. Row 120 × 8, 8 makes 120 the base. Lateral raise (20s × 9, 9, 9) and incline curl (20s × 7, 7, 8) stay at 20s.",
+      "Paused bench 145 × 4, 4, 4 and squat volume 185 × 8, 6, 4 on Nov 4 are unchanged for week 6, which is the taper (3 × 3 @ 135 and 3 × 10 @ 135), and Monday's taper numbers stand.",
+      "Smith incline press 95 × 8, 8, 8 goes to 100. Overhead triceps extension 40 × 8, 8, 8 goes to 40. Forearm rotation 10 lb × 15, 15 stays at 10 lb (was planned at 12).",
+      "Rear delt work on the cable machine on both Nov 1 and Nov 4, so the Nautilus rear delt fly is replaced by the cable reverse fly at 10 lb in week 6.",
+      "Your swaps are now the plan for week 6. Hammer curl (3 × 8–12 @ 25s) is added to Friday, since you do it every week and want it. Sunday core is weighted sit-up (25 lb) and cable push-pull (15 lb) in place of the Pallof press and woodchop, and the suitcase carry is dropped after two skipped Sundays. Friday ran 85 min last week, so watch the clock.",
+    ],
+  },
+  {
+    date: "2026-11-02",
+    title: "After Week 5 Monday",
+    changes: [
+      "Back squat 215 × 3, 3, 3, 3, 6 on Nov 2: every set reached 3+, so week 6 stays at 220 (+5).",
+      "Bench volume 150 × 8, 8, 8 hit all sets, but week 6 is the taper (2 × 5 @ 140) so it is unchanged. Your note says the shoulder slipped on the first set, so watch it before Friday's max test.",
+      "DB shoulder press 45s × 8, 6, 6 missed on two sets, so 45s repeats instead of the +5 the script proposed.",
+      "Leg curl goes to 120 in week 6: 120 × 6, 6, 6 (planned 110). Pushdown stays at 50 (49 × 6, 6, 6) and reverse wrist curl stays at 10 lb (15, 15, two sets).",
+      "The leg curl was done this week, so the question about dropping it is closed for now.",
+    ],
+  },
+  {
     date: "2026-11-01",
     title: "After Week 4: new warm-ups, week 5 loads",
     changes: [
