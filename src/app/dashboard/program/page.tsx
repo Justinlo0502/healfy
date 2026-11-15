@@ -7,7 +7,9 @@ import { buildSessionReports, type SessionReport as Report } from "@/lib/session
 import {
   PROGRAM_DAYS,
   PROGRAM_NAME,
+  PROGRAM_START,
   PROGRAM_WEEKS,
+  ROUTINE_PREFIX,
   cueFor,
   dayDate,
   exercisesFor,
@@ -24,16 +26,16 @@ import WeekTabs from "./WeekTabs";
 import { TIER_LABEL, TIER_STYLE } from "./tiers";
 
 // The current 6-week lifting program, rendered from src/lib/program.ts —
-// the same definition scripts/push-comeback-block.ts pushes to Hevy.
+// the same definition scripts/push-program.ts pushes to Hevy.
 
 const WEEK_STRIP: { day: string; text: string; paddle?: boolean; home?: boolean; rest?: boolean }[] = [
-  { day: "Mon", text: "Bench volume · Squat heavy · DB press", paddle: true },
+  { day: "Mon", text: "Bench volume · Deadlift volume · DB press", paddle: true },
   { day: "Tue", text: "Off", rest: true },
-  { day: "Wed", text: "Paused bench · Squat volume", paddle: true },
+  { day: "Wed", text: "Close-grip bench · Squat · Incline", paddle: true },
   { day: "Thu", text: "Home mobility + elbow", home: true },
-  { day: "Fri", text: "Bench heavy · Deadlift · Pull-up" },
+  { day: "Fri", text: "Bench heavy · Deadlift heavy · Pull-up volume" },
   { day: "Sat", text: "Off", rest: true },
-  { day: "Sun", text: "Pull-up heavy · Row" },
+  { day: "Sun", text: "Weighted pull-up · Rows · Shoulders · Core" },
 ];
 
 function shortDate(iso: string): string {
@@ -157,11 +159,11 @@ export default async function ProgramPage() {
   // A session is done once a workout titled after its routine is logged in Hevy.
   const [logged, routines, templates] = await Promise.all([
     db.hevyWorkout.findMany({
-      where: { athleteId: athlete.id, title: { startsWith: "CB " } },
+      where: { athleteId: athlete.id, title: { startsWith: `${ROUTINE_PREFIX} ` } },
       select: { title: true, startTime: true, endTime: true, exercises: true },
     }),
     db.hevyRoutine.findMany({
-      where: { athleteId: athlete.id, title: { startsWith: "CB " } },
+      where: { athleteId: athlete.id, title: { startsWith: `${ROUTINE_PREFIX} ` } },
       select: { title: true, exercises: true },
     }),
     db.hevyExerciseTemplate.findMany({
@@ -187,20 +189,25 @@ export default async function ProgramPage() {
       {/* Hero */}
       <div className="gradient-accent relative overflow-hidden rounded-3xl p-6 text-accent-foreground shadow-card sm:p-8">
         <p className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide opacity-80">
-          <CalendarDays className="h-4 w-4" strokeWidth={2.5} /> 6-week block · Oct 5 – Nov 15, 2026
+          <CalendarDays className="h-4 w-4" strokeWidth={2.5} /> 6-week volume block · Nov 16 – Dec 27, 2026
         </p>
         <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">{PROGRAM_NAME}</h1>
         <p className="mt-2 max-w-2xl text-sm opacity-90">
-          Bench and weighted pull-up first, squat and conventional deadlift second. Bench runs 3× a week, always first:
-          volume Monday, paused Wednesday, heavy Friday, following the day order from Zourdos et al. (2016). Pull-up,
-          squat and deadlift use GZCLP&apos;s tiers. Elbow loading and dragon boat trunk work are built in.
+          The volume block after the Comeback Block. Bench runs 3× a week, always first: 5 × 8 Monday, close-grip
+          Wednesday, 5 × 5+ Friday, in the day order from Zourdos et al. (2016). Deadlift twice (GZCLP&apos;s heavy and
+          light pair), squat once, and Friday pull-ups train for the AMRAP test. Weeks 1–5 add sets, then weight; week 6
+          is a deload.
         </p>
         <div className="mt-4 flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs opacity-90">
-          <span>{currentWeek ? `Week ${currentWeek} of ${PROGRAM_WEEKS}` : weekNow === 0 ? "Starts Mon, Oct 5" : "Block complete"}</span>
+          <span>{currentWeek
+            ? `Week ${currentWeek} of ${PROGRAM_WEEKS}`
+            : weekNow === 0
+              ? `Starts Mon, ${shortDate(PROGRAM_START)}`
+              : "Block complete"}</span>
           <span>4 gym days + 1 home day</span>
           <span>Bench 3× a week</span>
-          <span>60–65 min per session</span>
-          <span>No supersets on main lifts</span>
+          <span>65–75 min per session</span>
+          <span>Week 6 deload</span>
         </div>
       </div>
 
@@ -226,9 +233,8 @@ export default async function ProgramPage() {
           ))}
         </div>
         <p className="text-[13px] text-muted">
-          Pull-ups and deadlifts never land on a paddling day, so your lats, grip, elbow and lower back reach the boat
-          fresh. Bench comes first on Mon, Wed and Fri. Sunday has no bench and no hinging, because Monday brings bench,
-          squats and paddling.
+          The heavy deadlift and both pull-up days avoid paddling nights. Monday&apos;s deadlift is the light one, with
+          reps in reserve before the boat. Sunday has no bench, so Monday&apos;s bench volume starts fresh.
         </p>
       </section>
 
@@ -245,77 +251,76 @@ export default async function ProgramPage() {
         <Panel title="How weights move">
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
-              <b>Bench, 3 days.</b> Monday is 8s at 135 → 155, with sets dropping from 4 to 3 as the weight climbs.
-              Wednesday is paused bench at 130 → 150, going from 4 × 5 to 3 × 4. Friday is 5 × 3+ at 150 → 175 (shifted up
-              5 lb after the 7-rep AMRAP on Oct 9). Week 6 tapers into a max test on Friday.
+              <b>Volume first.</b> This block grows by adding sets before weight. Monday bench goes 4 × 8 → 5 × 8 at
+              150, then the same again at 155. Weeks 1–5 build and week 6 is a deload.
             </li>
             <li>
-              <b>Bench auto-adjust:</b> if Friday&apos;s AMRAP set reaches 6+ reps, add an extra 5 lb to every bench
-              number from next week.
+              <b>Bench, 3 days.</b> Monday 5 × 8 at 150 → 160. Wednesday close-grip 4 × 6 at 140 → 155. Friday
+              5 × 5+ at 175 → 190, with the last set AMRAP. An AMRAP of 8+ adds an extra 5 lb.
             </li>
             <li>
-              <b>Squat, deadlift, pull-up (GZCLP).</b> Heavy days are 5 × 3+ with the last set AMRAP, stopping one
-              clean rep short. +5 lb a week on pull-ups, +10 lb on squat and deadlift. Missed reps: repeat the weight
-              as 6 × 2, then 10 × 1. Volume days are 3 × 10 at about RPE 8. Missed reps: same weight as 3 × 8, then
-              3 × 6.
+              <b>Heavy days (GZCLP T1):</b> Friday deadlift 5 × 3+ and Sunday weighted pull-up 5 × 3+. Every set at
+              target: +10 lb on deadlift (+5 from week 3), +5 lb on pull-ups. A missed set repeats the weight.
+            </li>
+            <li>
+              <b>Fixed-rep days:</b> Monday deadlift 3 × 8, Wednesday squat 5 × 5, Monday bench, close-grip. Every set
+              at target → +5 lb next week, otherwise repeat.
+            </li>
+            <li>
+              <b>Friday pull-ups:</b> one max set, then sets of 6–7 with 60 s rest until the weekly rep total: 40 / 45 /
+              50 / 55 / 60. Week 6 Friday is a single max set (the AMRAP test).
             </li>
             <li>
               <b>Accessories:</b> stay inside the rep range. When every set reaches the top of the range, move up by
               the smallest jump available.
             </li>
-            <li>The exercises stay the same for all six weeks, and only the loads change.</li>
           </ul>
         </Panel>
 
         <Panel title="Starting numbers">
           <p className="text-[13px] text-muted">
-            From your Hevy logs since Sep 18, after the August break. Heavy sets start at 75–80% of your current
-            estimated max.
+            From your Hevy logs at the end of the Comeback Block (Nov 2 – Nov 15). Bench max is your own estimate after
+            missing 225 on Nov 13.
           </p>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="text-left font-mono text-xs uppercase tracking-wide text-muted">
                   <th className="border-b border-line py-2 pr-3 font-medium">Lift</th>
-                  <th className="border-b border-line py-2 pr-3 font-medium">Recent best</th>
+                  <th className="border-b border-line py-2 pr-3 font-medium">Last block</th>
                   <th className="border-b border-line py-2 pr-3 font-medium">Est. max now</th>
-                  <th className="border-b border-line py-2 font-medium">Spring peak</th>
+                  <th className="border-b border-line py-2 font-medium">Week 1</th>
                 </tr>
               </thead>
               <tbody className="font-mono tabular-nums">
                 {[
-                  ["Bench", "135×10", "≈185", "225×1"],
-                  ["Weighted pull-up", "+25×8", "≈+75", "+70×4"],
-                  ["Squat", "185×6 (Jul)", "≈215", "245×4"],
-                  ["Deadlift (conv.)", "205×5", "≈245", "315×3"],
-                ].map(([lift, recent, est, peak]) => (
+                  ["Bench", "185×3×5, 150×8×3", "210–215", "175×5×5+"],
+                  ["Weighted pull-up", "+60×3×5", "≈+66", "+65×3×5+"],
+                  ["Squat", "215×3+6, 185×8×3", "≈258", "200×5×5"],
+                  ["Deadlift", "275×3,2,2, 225×8", "≈285–300", "255×3×5+"],
+                  ["Pull-up (BW)", "12, 12, 6", "12–14 reps", "max + 6s to 40"],
+                ].map(([lift, recent, est, start]) => (
                   <tr key={lift}>
                     <td className="border-b border-line py-2 pr-3 font-sans">{lift}</td>
                     <td className="border-b border-line py-2 pr-3">{recent}</td>
                     <td className="border-b border-line py-2 pr-3">{est}</td>
-                    <td className="border-b border-line py-2">{peak}</td>
+                    <td className="border-b border-line py-2">{start}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <p className="text-[13px] text-muted">
-            Pull-up loads assume a bodyweight of about 165 lb (last weigh-in Apr 24).
-          </p>
         </Panel>
 
-        <Panel title="Elbow program">
+        <Panel title="Elbow">
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
-              <b>Gym, 3× per week:</b> reverse wrist curl (Mon), forearm rotation (Wed), wrist curl (Fri). All 3 × 15
-              with a slow 3 s lowering phase.
+              <b>Home, Thursday:</b> isometric wrist holds of 45 s per set, plus forearm stretches. The gym wrist curls
+              are gone, since they were skipped most weeks.
             </li>
             <li>
-              <b>Home, Thursday:</b> isometric wrist holds of 45 s per set, plus forearm stretches.
-            </li>
-            <li>
-              <b>Arm work that&apos;s easy on the elbow:</b> rope pushdowns and incline DB curls. No skull crushers or
-              heavy hammer curls, since both have flared it before.
+              <b>Watch the load:</b> this block raises both pressing (about 20 sets a week) and pulling volume. Close-grip
+              bench uses a grip just inside shoulder width, not narrow. Hammer curls stay at 25s.
             </li>
             <li>
               <b>Pain rule:</b> up to 3/10 during an exercise is fine if it&apos;s back to normal by the next morning. If
@@ -324,21 +329,19 @@ export default async function ProgramPage() {
           </ul>
         </Panel>
 
-        <Panel title="Dragon boat trunk">
+        <Panel title="Dragon boat and the lower back">
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
-              <b>Bird dog in every warm-up</b> (plus dead bug on Thursday): trunk control with low spinal load. Gym
-              warm-ups are 2 min row, then cat-camel, thread the needle, bird dog and fire hydrants, with banded pull
-              aparts on bench days. Scapular pull-ups go right before pull-ups.
+              <b>Monday deadlift is the light one:</b> 3 × 8 leaving 2 reps in reserve, since you paddle that night. The
+              heavy pull is Friday, with no paddling.
             </li>
             <li>
-              <b>Back extensor endurance</b> with 45° back extensions on Friday. Low extensor endurance is linked to
-              back pain in rowing-type sports.
+              <b>Back extensor endurance</b> with 45° back extensions on Friday.
             </li>
             <li>
-              <b>Rotation control</b> on Sunday: Pallof press, cable woodchop and suitcase carry.
+              <b>Trunk on Sunday:</b> decline sit-up with a press and the cable push-pull, both picked by you. Rows are
+              chest-supported or single-arm so the lower back rests before Monday.
             </li>
-            <li>No loaded spinal flexion such as sit-ups or Russian twists. The boat already gives you plenty.</li>
           </ul>
         </Panel>
       </div>
@@ -347,27 +350,33 @@ export default async function ProgramPage() {
         <summary className="cursor-pointer font-semibold">Why it&apos;s built this way</summary>
         <div className="mt-3 flex max-w-prose flex-col gap-3 text-sm">
           <p>
-            <b>Bench gets 3 days, always first.</b> In Zourdos et al. (2016), powerlifters benched 3× a week for 6
-            weeks. Running the days as volume → lighter middle day → heavy gave clearly bigger bench gains than putting
-            the heavy day in the middle, so this block uses that order on Mon/Wed/Fri.
+            <b>A volume block after a peak.</b> The Comeback Block ended with a bench max test. Candito&apos;s 6-week
+            program and most block-periodised plans follow a peak with higher-volume weeks before the next heavy phase.
+            5/3/1 Boring But Big gets its volume from extra sets of the main lifts rather than more exercises, and this
+            block does the same.
           </p>
           <p>
-            <b>Paused bench on Wednesday.</b> It&apos;s the same movement as your bench, removes the bounce, builds
-            strength off the chest, and needs less weight, which is easier on the elbow. Close-grip can swap in if your
-            elbow handles it well.
+            <b>Bench 3 days, in the Zourdos order.</b> Volume Monday, lighter middle day Wednesday, heavy Friday, as in
+            Zourdos et al. (2016) and the last block.
           </p>
           <p>
-            <b>Seated DB shoulder press on Monday.</b> All pressing happens Mon/Wed/Fri, so your shoulders rest on Sun,
-            Tue and Thu, and nothing tires them the day before a bench session.
+            <b>Close-grip instead of paused bench on Wednesday.</b> A pause mostly helps lifters who compete with one.
+            Close-grip bench is the usual higher-rep middle-day variation (it is the hypertrophy-day lift in Stronger by
+            Science&apos;s DUP template), and it adds triceps and lockout work.
           </p>
           <p>
-            <b>Rep ranges.</b> 1RM strength grows more with heavy loads, while muscle growth is similar across a wide
-            rep range (Schoenfeld 2017). Strength work is 3–5 reps. Muscle building is 8s on Monday and 6–10 on incline
-            and DB press. High reps remain only on small, elbow-sensitive exercises.
+            <b>Deadlift twice, squat once.</b> GZCLP trains each main lift twice a week, once heavy (5 × 3+) and once
+            lighter. Deadlift is furthest below its best (about 285–300 against 346 before the block), so it gets the
+            second day. Squat stays once a week, inside your 1–2× priority.
           </p>
           <p>
-            <b>Pull-up, squat, deadlift</b> use GZCLP&apos;s tiers with fixed weekly increases. Deadlift stays once a
-            week, on Friday, far from your paddling nights.
+            <b>Pull-up rep work.</b> No published &ldquo;50 day&rdquo; plan turned up. The Armstrong program and 7 Weeks
+            to 50 Pull-Ups both pair a max set with lots of sub-max volume, which is what Friday does. Sunday&apos;s
+            weighted pull-ups keep the strength side.
+          </p>
+          <p>
+            <b>No incline on Sunday.</b> It would be pressing the day before Monday&apos;s bench volume. A pec fly trains
+            the chest without tiring the triceps or the elbow.
           </p>
         </div>
       </details>
@@ -376,14 +385,14 @@ export default async function ProgramPage() {
         <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm">
           {[
             ["Modified daily undulating periodization in powerlifters (Zourdos et al., 2016)", "https://pubmed.ncbi.nlm.nih.gov/26332783/"],
-            ["Low vs. high load: strength and hypertrophy meta-analysis (Schoenfeld et al., 2017)", "https://journals.lww.com/nsca-jscr/fulltext/2017/12000/strength_and_hypertrophy_adaptations_between_low_.31.aspx"],
             ["GZCLP rules (Cody Lefever)", "https://www.boostcamp.app/coaches/cody-lefever/gzcl-program-gzclp"],
-            ["Weekly training frequency and strength gain, meta-analysis", "https://pmc.ncbi.nlm.nih.gov/articles/PMC6081873/"],
+            ["GZCLP 4-day layout (SetForSet)", "https://www.setforset.com/blogs/news/gzclp-beginner-linear-progression-strength-program"],
+            ["5/3/1 Boring But Big (Jim Wendler)", "https://jimwendler.com/blogs/jimwendler-com/101077382-boring-but-big"],
+            ["Candito 6-week program (BarBend)", "https://barbend.com/candito-6-week-powerlifting-program/"],
+            ["Daily undulating periodization (Stronger by Science)", "https://www.strongerbyscience.com/daily-undulating-periodization/"],
+            ["Armstrong pull-up program (InsideHook)", "https://www.insidehook.com/wellness/armstrong-pull-routine"],
             ["Isometric exercise for lateral elbow tendinopathy", "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9820871/"],
-            ["Eccentric strengthening for lateral elbow tendinopathy, meta-analysis", "https://www.jhandtherapy.org/article/S0894-1130(20)30027-2/abstract"],
             ["Injuries in competitive dragon boating (Mukherjee et al., 2014)", "https://journals.sagepub.com/doi/10.1177/2325967114554550"],
-            ["McGill Big 3 for core stability", "https://squatuniversity.com/2018/06/21/the-mcgill-big-3-for-core-stability/"],
-            ["Stretching type and duration effects on range of motion (Thomas et al., 2018)", "https://pubmed.ncbi.nlm.nih.gov/29506306/"],
           ].map(([label, href]) => (
             <li key={href}>
               <a href={href} target="_blank" rel="noreferrer" className="text-accent2 underline-offset-2 hover:underline">

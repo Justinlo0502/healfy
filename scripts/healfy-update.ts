@@ -1,6 +1,6 @@
 // Analysis half of the `update:` workflow (.claude/skills/healfy-update).
 // Syncs Hevy, then prints a report of what was actually done in each logged
-// Comeback Block session versus what that session's routine prescribed:
+// session of the current block versus what that session's routine prescribed:
 //   1. per-session results (sets vs prescription, AMRAPs, e1RM, your notes)
 //   2. substitutions (planned moves dropped, unplanned moves added)
 //   3. proposed loads for the next session of each day, from the program's
@@ -31,6 +31,7 @@ import {
   PROGRAM_DAYS,
   PROGRAM_START,
   PROGRAM_WEEKS,
+  ROUTINE_PREFIX,
   dayDate,
   exercisesFor,
   type DayKey,
@@ -69,12 +70,13 @@ type Proposal = {
 // Progression rules (the "algorithm")
 // ---------------------------------------------------------------------------
 // Taken from the Rules panel on /dashboard/program and the program log:
-//  - T1 5×3+ (Mon squat, Fri deadlift, Sun pull-up, Fri bench heavy): every set
-//    at 3+ reps → next load = load lifted + step (squat 5, deadlift 10, pull-up
-//    5, bench 5). A miss on any set repeats the load. Bench heavy: an AMRAP of
-//    6+ adds an extra 5 lb.
-//  - Fixed-rep compounds (bench volume 4×8, paused bench 4×5, squat volume
-//    3×10, Fri pull-up 3×10): every set at target reps → +5 lb; otherwise repeat.
+//  - T1 AMRAP lifts (Fri bench heavy 5×5+, Fri deadlift 5×3+, Sun weighted
+//    pull-up 5×3+): every set at target reps → next load = load lifted + step
+//    (deadlift 10, pull-up 5, bench 5). A miss on any set repeats the load.
+//    Bench heavy: an AMRAP 3+ reps over target (8+ on 5s) adds an extra 5 lb.
+//  - Fixed-rep compounds (Mon bench 5×8, Mon deadlift 3×8, Wed close-grip 4×6,
+//    Wed squat 5×5): every set at target reps → +5 lb; otherwise repeat.
+//  - Friday bodyweight pull-ups are a rep total with no load: judge by hand.
 //  - Accessories with a rep range: every set at the top of the range → the
 //    smallest jump (2 lb under 40 lb, else 5). Otherwise stay at the load lifted.
 // In every case the load lifted is the new base ("rebase"), because the log
@@ -135,14 +137,14 @@ function proposeNext(
   if (ex.tier === "T1" && isAmrap(ex, fromWeek)) {
     const step = T1_STEP[ex.hevyTitle] ?? 5;
     if (clean) {
-      const bonus = ex.hevyTitle === "Bench Press (Barbell)" && (result.amrapReps ?? 0) >= 6 ? 5 : 0;
+      const bonus = ex.hevyTitle === "Bench Press (Barbell)" && (result.amrapReps ?? 0) >= result.plannedReps + 3 ? 5 : 0;
       next = lifted + step + bonus;
       rule = bonus ? "T1 AMRAP + bench 6+ bonus" : "T1 AMRAP";
-      reason = `${result.sets.map((s) => `${s.lb}×${s.reps}`).join(", ")}: every set reached 3+${bonus ? `, AMRAP ${result.amrapReps} adds +5 lb` : ""}. ${lifted} + ${step}${bonus ? " + 5" : ""}.`;
+      reason = `${result.sets.map((s) => `${s.lb}×${s.reps}`).join(", ")}: every set reached ${result.plannedReps}+${bonus ? `, AMRAP ${result.amrapReps} adds +5 lb` : ""}. ${lifted} + ${step}${bonus ? " + 5" : ""}.`;
     } else {
       next = lifted;
       rule = "T1 AMRAP miss";
-      reason = "A set fell short of 3 reps (or a set is missing), so repeat the load.";
+      reason = `A set fell short of ${result.plannedReps} reps (or a set is missing), so repeat the load.`;
     }
   } else if (ex.tier === "T1" || ex.tier === "T2") {
     next = clean ? lifted + 5 : lifted;
@@ -195,7 +197,7 @@ async function main() {
   const [workouts, templates, routineRows] = await Promise.all([
     db.hevyWorkout.findMany({ where: { athleteId: athlete.id }, orderBy: { startTime: "asc" } }),
     db.hevyExerciseTemplate.findMany({ where: { athleteId: athlete.id } }),
-    db.hevyRoutine.findMany({ where: { athleteId: athlete.id, title: { startsWith: "CB " } } }),
+    db.hevyRoutine.findMany({ where: { athleteId: athlete.id, title: { startsWith: `${ROUTINE_PREFIX} ` } } }),
   ]);
   const templateTitles = new Set(templates.map((t) => t.title));
 
@@ -261,7 +263,7 @@ async function main() {
   }
 
   // Expected vs actual, and PR outlook.
-  const cbWorkouts = workouts.filter((w) => w.title.startsWith("CB W"));
+  const cbWorkouts = workouts.filter((w) => w.title.startsWith(`${ROUTINE_PREFIX} W`));
   const progress = liftProgress(cbWorkouts);
   const blockStart = new Date(`${PROGRAM_START}T00:00:00Z`);
   const outlook = progress.map((p) => {

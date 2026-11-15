@@ -3,11 +3,11 @@ import { requireAthlete } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { liftProgress } from "@/lib/progress";
 import { PROGRAM_LOG } from "@/lib/programLog";
-import { PROGRAM_NAME } from "@/lib/program";
+import { PROGRAM_NAME, ROUTINE_PREFIX } from "@/lib/program";
 import { ClipboardList, Target } from "lucide-react";
 import ProgressChart from "./ProgressChart";
 
-// Expected vs actual estimated 1RM for the Comeback Block, plus the manual log
+// Expected vs actual estimated 1RM for the current block, plus the manual log
 // of program changes. Everything is derived from synced Hevy sets.
 
 const fmt = (n: number | null) => (n == null ? "—" : n.toFixed(2));
@@ -18,7 +18,7 @@ export default async function ProgressPage() {
   if (!athlete) redirect("/login");
 
   const workouts = await db.hevyWorkout.findMany({
-    where: { athleteId: athlete.id, title: { startsWith: "CB W" } },
+    where: { athleteId: athlete.id, title: { startsWith: `${ROUTINE_PREFIX} W` } },
   });
   const lifts = liftProgress(workouts);
 
@@ -30,8 +30,10 @@ export default async function ProgressPage() {
         </p>
         <h1 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">Expected vs actual 1RM</h1>
         <p className="mt-2 max-w-2xl text-sm opacity-90">
-          Expected is the Epley estimate from the original Oct 5 plan at the minimum reps (3), and it stays fixed when
-          loads are revised, so beating it means you are ahead of the block. Actual is your best set of 10 reps or fewer in that session. Weights are in lb.
+          Expected is the Epley estimate from the original Nov 15 plan at the minimum reps (5 for bench and squat, 3 for
+          deadlift and weighted pull-up), and it stays fixed when loads are revised, so beating it means you are ahead of
+          the block. Actual is your best set of 10 reps or fewer in that session. Week 6 is a deload and is not compared.
+          Weights are in lb.
         </p>
       </div>
 
@@ -80,10 +82,10 @@ export default async function ProgressPage() {
                   <tr key={r.week}>
                     <td className="border-b border-line py-2 pr-3 font-sans">W{r.week}</td>
                     <td className="border-b border-line py-2 pr-3">
-                      {r.baselineLb != null ? `${r.baselineLb.toFixed(2)} × 3+` : "max test"}
+                      {r.baselineLb != null ? `${r.baselineLb.toFixed(2)} × ${r.baselineReps}` : "deload"}
                     </td>
                     <td className="border-b border-line py-2 pr-3">
-                      {r.plannedLoadLb != null ? `${r.plannedLoadLb.toFixed(2)} × ${r.plannedReps}+` : "max test"}
+                      {r.plannedLoadLb != null ? `${r.plannedLoadLb.toFixed(2)} × ${r.plannedRepsLabel ?? "—"}` : "—"}
                     </td>
                     <td className="border-b border-line py-2 pr-3">{fmt(r.expected1RM)}</td>
                     <td className="border-b border-line py-2 pr-3">

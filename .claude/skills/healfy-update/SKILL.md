@@ -1,7 +1,7 @@
 ---
 name: healfy-update
-description: Post-workout update for the Comeback Block. Use when the user's message starts with "update:" (or says "healfy update"). Syncs Hevy, briefs every newly logged session, revises the remaining weeks' loads and exercises from the logged weights, comments and swaps, refreshes expected-vs-actual 1RM and PR outlook, and pushes the changes to Hevy. Done sessions get a check mark on /dashboard/program automatically.
-allowed-tools: Bash(npx tsx scripts/healfy-update.ts*) Bash(npx tsx scripts/routine-cleanup.ts*) Bash(npx tsx scripts/push-comeback-block.ts*) Bash(npx tsc --noEmit*)
+description: Post-workout update for the current lifting block (Regressive Underload, Nov 16 – Dec 27, 2026). Use when the user's message starts with "update:" (or says "healfy update"). Syncs Hevy, briefs every newly logged session, revises the remaining weeks' loads and exercises from the logged weights, comments and swaps, refreshes expected-vs-actual 1RM and PR outlook, and pushes the changes to Hevy. Done sessions get a check mark on /dashboard/program automatically.
+allowed-tools: Bash(npx tsx scripts/healfy-update.ts*) Bash(npx tsx scripts/routine-cleanup.ts*) Bash(npx tsx scripts/push-program.ts*) Bash(npx tsc --noEmit*)
 ---
 
 # healfy update
@@ -48,16 +48,20 @@ Keys already in `BRIEFINGS` are never re-written unless the user asks (`--all`).
 
 Use the "Proposed loads" section as the starting point. The rules it encodes (from the Rules panel on `/dashboard/program`):
 
-- T1 5×3+ (Mon squat, Fri deadlift, Sun weighted pull-up, Fri bench heavy): every set at 3+ → load lifted + step (squat 5, deadlift 10,
-  pull-up 5, bench 5). A miss repeats the load. Bench heavy AMRAP of 6+ adds an extra 5 lb.
-- Fixed-rep compounds (bench volume, paused bench, squat volume, Fri pull-up): every set at target → +5, otherwise repeat.
+- T1 AMRAP lifts (Fri bench heavy 5×5+, Fri deadlift 5×3+, Sun weighted pull-up 5×3+): every set at target → load lifted + step
+  (deadlift 10, pull-up 5, bench 5). A miss repeats the load. Bench heavy AMRAP of 8+ (target + 3) adds an extra 5 lb.
+- Fixed-rep compounds (Mon bench volume, Mon deadlift 3×8, Wed close-grip 4×6, Wed squat 5×5): every set at target → +5, otherwise
+  repeat. Monday bench adds a set before it adds weight (4×8 → 5×8), so a clean 4×8 week moves to 5×8 at the same load.
+- Friday bodyweight pull-ups are a weekly rep total (one max set, then sets of 6–7): note the max set and the total, and keep the
+  planned totals unless the max set moved a lot. Week 6 Friday is the AMRAP test.
+- Week 6 is a deload: keep its loads light whatever the ladder says.
 - Accessories: every set at the top of the rep range → smallest jump (2 lb under 40 lb, else 5). Otherwise stay and add reps.
 - The ladder follows the lifter: the load actually lifted is the new base, and later weeks climb from there.
 - A skipped session or skipped exercise never advances the ladder.
 
 Apply by editing `src/lib/program.ts` for sessions still to come only (never touch a past week's numbers):
 
-- Ladder arrays (`BENCH_VOLUME`, `BENCH_PAUSED`, `BENCH_HEAVY`, `SQUAT_VOLUME`, `DEADLIFT_T1`, `PULLUP_T1`, `PULLUP_T2`, `SQUAT_T1`) and
+- Ladder arrays (`BENCH_VOLUME`, `CLOSE_GRIP`, `BENCH_HEAVY`, `SQUAT`, `DEADLIFT_VOLUME`, `DEADLIFT_HEAVY`, `PULLUP_HEAVY`, `PULLUP_VOLUME`) and
   accessory `weightLb`/`loadLabel` values.
 - Rewrite the exercise's `cue` so it states the latest logged result ("You did X on <date>") and the rule for the next jump.
   Replace stale history, do not stack it.
@@ -67,7 +71,7 @@ Apply by editing `src/lib/program.ts` for sessions still to come only (never tou
 Judgement overrides to the script, in the user's favour of safety and their stated constraints (see the training-program-preferences
 memory): never start a lift below what they recently logged; keep sessions at 75 min or less (a session that ran long means trimming
 accessories, not adding); no supersets on compound lifts; keep the Mon/Wed/Fri/Sun + Thursday-home structure; elbow-friendly moves only
-(no skull crushers or heavy hammer curls, which have flared the elbow, so flag a recurring hammer curl instead of programming it).
+(no skull crushers or heavy hammer curls, which have flared the elbow: the user asked for Friday hammer curls, so keep them moderate, 25s for 8–12, and flag grinding sets).
 If the user's note mentions pain or a bad day, let that outrank the arithmetic and say so.
 
 ## 4. Handle substitutions
@@ -89,11 +93,11 @@ The swapped-in move must exist as a Hevy exercise template ("Hevy exercise exist
 
 The last report section comes from `src/lib/progress.ts` (`liftProgress`), the one algorithm for expected vs actual 1RM (Epley,
 best set of 10 reps or fewer per session). Do not recompute by hand and do not edit the frozen `baselineLb` arrays there: they are
-the original Oct 5 plan on purpose.
+the original Nov 15 plan of the current block on purpose (week 6 is a deload and is not compared).
 
 - Report, per tracked lift: latest actual vs expected, the gap, end-of-block pace (`onPaceFor`), and whether that beats the best
   before the block or in it (`PR EXPECTED` or not).
-- Week 6 bench is a max test: if bench is on pace, suggest an opener and a first attempt from the pace e1RM, stated as a suggestion.
+- Week 6 is a deload, not a bench test. Report the end-of-week-5 pace and what it suggests for the next block's starting loads.
 - If a tracked lift's exercise name changes in `program.ts`, update `TRACKED_LIFTS` in `progress.ts` to match.
 
 ## 6. Log it
@@ -104,7 +108,7 @@ skipped" if relevant), and one change per bullet, each naming the logged sets it
 ## 7. Push to Hevy and verify
 
 1. `npx tsc --noEmit`, fix any errors.
-2. `npx tsx scripts/push-comeback-block.ts --dry-run`, then the real run. It only updates sessions dated today or later and leaves
+2. `npx tsx scripts/push-program.ts --dry-run`, then the real run. It only updates sessions dated today or later and leaves
    finished ones as logged. On a Hevy 429, resume with `--from-week N` (and `--day Mon` to shrink the job).
 3. The check mark needs nothing: `/dashboard/program` shows it on any session with a logged Hevy workout, and a "Planned vs done" report appears under the planned workout. The sets, statuses and time come live from the Hevy log (`src/lib/sessionReport.ts`); your briefing supplies the verdict, summary and highlights.
 

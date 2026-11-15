@@ -1,28 +1,36 @@
-// Expected vs actual estimated 1RM across the Comeback Block. Pure calculations
-// over the program definition and synced Hevy workouts.
+// Expected vs actual estimated 1RM across the current block (Regressive
+// Underload). Pure calculations over the program definition and synced Hevy
+// workouts.
 //
-// "Expected" is what the ORIGINAL (Oct 5) prescription implies if you only hit
-// the minimum reps at the planned load: Epley(baseline load, 3 reps). Beating
-// it means ahead of schedule. The baseline is frozen here on purpose: when the
-// live plan in program.ts is revised after a session, the expectation must not
-// move with it, or the page could never show over- or under-performance.
-// Week 6 bench is a max test with no planned load, so its expected value
-// carries forward from week 5.
+// "Expected" is what the ORIGINAL (Nov 15) prescription implies if you only hit
+// the minimum reps at the planned load: Epley(baseline load, baseline reps).
+// Beating it means ahead of schedule. The baseline is frozen here on purpose:
+// when the live plan in program.ts is revised after a session, the expectation
+// must not move with it, or the page could never show over- or
+// under-performance. Week 6 is a deload (baseline null): it is shown but not
+// compared, and it does not move the end-of-block pace.
 
-import { PROGRAM_DAYS, PROGRAM_WEEKS, type DayKey } from "@/lib/program";
+import { PROGRAM_DAYS, PROGRAM_WEEKS, ROUTINE_PREFIX, type DayKey } from "@/lib/program";
 import { epley1RM, type HevyWorkoutRow } from "@/lib/hevyInsights";
 import { kgToLb } from "@/lib/format";
 import type { HevyExercise } from "@/lib/hevy";
 
-type TrackedLift = { key: string; label: string; day: DayKey; exerciseName: string; baselineLb: (number | null)[] };
-
-const BASELINE_REPS = 3;
+type TrackedLift = {
+  key: string;
+  label: string;
+  day: DayKey;
+  exerciseName: string;
+  /** Reps per set the baseline load was prescribed for. */
+  baselineReps: number;
+  /** Planned load per week as of Nov 15; null = not compared (deload). */
+  baselineLb: (number | null)[];
+};
 
 export const TRACKED_LIFTS: TrackedLift[] = [
-  { key: "bench", label: "Bench Press", day: "Fri", exerciseName: "Bench Press · heavy", baselineLb: [150, 155, 160, 165, 170, null] },
-  { key: "squat", label: "Back Squat", day: "Mon", exerciseName: "Back Squat", baselineLb: [160, 175, 185, 190, 200, 205] },
-  { key: "deadlift", label: "Deadlift", day: "Fri", exerciseName: "Deadlift (conventional)", baselineLb: [190, 200, 210, 220, 230, 240] },
-  { key: "pullup", label: "Weighted Pull-up (added load)", day: "Sun", exerciseName: "Weighted Pull-up", baselineLb: [25, 30, 35, 40, 45, 50] },
+  { key: "bench", label: "Bench Press", day: "Fri", exerciseName: "Bench Press · heavy", baselineReps: 5, baselineLb: [175, 180, 185, 185, 190, null] },
+  { key: "squat", label: "Back Squat", day: "Wed", exerciseName: "Back Squat", baselineReps: 5, baselineLb: [200, 205, 210, 215, 220, null] },
+  { key: "deadlift", label: "Deadlift", day: "Fri", exerciseName: "Deadlift · heavy", baselineReps: 3, baselineLb: [255, 265, 270, 275, 280, null] },
+  { key: "pullup", label: "Weighted Pull-up (added load)", day: "Sun", exerciseName: "Weighted Pull-up", baselineReps: 3, baselineLb: [65, 70, 75, 75, 80, null] },
 ];
 
 export type ProgressRow = {
@@ -30,7 +38,11 @@ export type ProgressRow = {
   /** Current (possibly revised) load from program.ts. */
   plannedLoadLb: number | null;
   plannedReps: number | null;
-  /** Original Oct 5 load the expectation is based on. */
+  /** Rep target as written, e.g. "5+" or "5". */
+  plannedRepsLabel: string | null;
+  /** Reps the frozen baseline load was prescribed for. */
+  baselineReps: number;
+  /** Original Nov 15 load the expectation is based on. */
   baselineLb: number | null;
   expected1RM: number | null;
   actualTop: { weightLb: number; reps: number } | null;
@@ -59,7 +71,7 @@ function sessionTopSet(
   day: DayKey,
   hevyTitle: string
 ): { weightLb: number; reps: number; oneRm: number } | null {
-  const prefix = `CB W${week} ${day}`;
+  const prefix = `${ROUTINE_PREFIX} W${week} ${day}`;
   let best: { weightLb: number; reps: number; oneRm: number } | null = null;
   for (const w of workouts) {
     if (!w.title.startsWith(prefix)) continue;
@@ -80,19 +92,18 @@ export function liftProgress(workouts: WorkoutRow[]): LiftProgress[] {
   return TRACKED_LIFTS.map((lift) => {
     const day = PROGRAM_DAYS.find((d) => d.key === lift.day)!;
     const ex = day.exercises.find((e) => e.name === lift.exerciseName)!;
-    let carried: number | null = null;
     const rows: ProgressRow[] = [];
     for (let week = 1; week <= PROGRAM_WEEKS; week++) {
       const rx = ex.rx(week);
       const base = lift.baselineLb[week - 1];
-      const planned = base != null ? epley1RM(base, BASELINE_REPS) : null;
-      const expected = planned ?? carried;
-      if (planned != null) carried = planned;
+      const expected = base != null ? epley1RM(base, lift.baselineReps) : null;
       const top = sessionTopSet(workouts, week, lift.day, ex.hevyTitle);
       rows.push({
         week,
         plannedLoadLb: rx.weightLb,
         plannedReps: rx.reps ?? null,
+        plannedRepsLabel: rx.repsLabel ?? (rx.reps != null ? String(rx.reps) : null),
+        baselineReps: lift.baselineReps,
         baselineLb: base,
         expected1RM: expected == null ? null : round2(expected),
         actualTop: top ? { weightLb: round2(top.weightLb), reps: top.reps } : null,
@@ -100,9 +111,10 @@ export function liftProgress(workouts: WorkoutRow[]): LiftProgress[] {
         delta: top && expected != null ? round2(top.oneRm - expected) : null,
       });
     }
-    const logged = rows.filter((r) => r.actual1RM != null);
-    const last = logged[logged.length - 1];
-    const endExpected = rows[rows.length - 1].expected1RM;
+    // Pace comes from the latest compared week; the deload is shown but never moves it.
+    const compared = rows.filter((r) => r.delta != null);
+    const last = compared[compared.length - 1];
+    const endExpected = [...rows].reverse().find((r) => r.expected1RM != null)?.expected1RM ?? null;
     return {
       key: lift.key,
       label: lift.label,

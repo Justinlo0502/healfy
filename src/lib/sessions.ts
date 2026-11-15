@@ -1,14 +1,15 @@
-// Maps logged Hevy workouts back to Comeback Block sessions. The push script
-// titles every routine "CB W<week> <Day> · …" (the Thursday home session is
-// "CB Thu · …" with no week), and Hevy keeps the routine title when a workout
-// is logged, so the title is the link between the plan and what was done.
+// Maps logged Hevy workouts back to sessions of the current block. The push
+// script titles every routine "<prefix> W<week> <Day> · …" (the Thursday home
+// session is "<prefix> Thu · …" with no week), and Hevy keeps the routine title
+// when a workout is logged, so the title is the link between the plan and what
+// was done. The prefix is ROUTINE_PREFIX ("RU"); the Comeback Block used "CB".
 
-import { PROGRAM_WEEKS, weekForDate, type DayKey } from "@/lib/program";
+import { PROGRAM_WEEKS, ROUTINE_PREFIX, weekForDate, type DayKey } from "@/lib/program";
 
 export type SessionRef = { week: number; day: DayKey };
 
-const GYM_TITLE = /^CB W(\d+) (Mon|Wed|Fri|Sun)\b/;
-const HOME_TITLE = /^CB Thu\b/;
+const GYM_TITLE = new RegExp(`^${ROUTINE_PREFIX} W(\\d+) (Mon|Wed|Fri|Sun)\\b`);
+const HOME_TITLE = new RegExp(`^${ROUTINE_PREFIX} Thu\\b`);
 
 export const sessionKey = (week: number, day: DayKey) => `W${week}-${day}`;
 

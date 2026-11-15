@@ -1,4 +1,4 @@
-// Lists Comeback Block routines in Hevy that should be deleted by hand. Hevy's
+// Lists program routines in Hevy that should be deleted by hand. Hevy's
 // public API has no routine delete (DELETE /v1/routines/:id returns 404), so
 // this only reads and prints a checklist. Two kinds:
 //   1. PAST: sessions dated before today. They are done or skipped, so they
@@ -6,22 +6,30 @@
 //      program page and the update report read them as each session's plan).
 //   2. STALE DUPLICATE: a title that exists more than once. The copy Hevy
 //      updated most recently is kept; older copies can show out-of-date weights.
-// The repeating Thursday home routine ("CB Thu · …") is never listed as past.
+// The current block's repeating Thursday routine ("RU Thu · …") is never listed
+// as past. Every routine of a finished block (LEGACY_PREFIXES, e.g. the
+// Comeback Block's "CB …") is past.
 //
 //   npx tsx scripts/routine-cleanup.ts
 import "dotenv/config";
 import { listAllRoutines, type HevyRoutineDto } from "../src/lib/hevy";
-import { PROGRAM_DAYS, dayDate } from "../src/lib/program";
+import { PROGRAM_DAYS, ROUTINE_PREFIX, dayDate } from "../src/lib/program";
+
+/** Routine prefixes of finished blocks: all of their routines are past. */
+const LEGACY_PREFIXES = ["CB "];
+const GYM_TITLE = new RegExp(`^${ROUTINE_PREFIX} W([0-9]+) (Mon|Wed|Fri|Sun)\\b`);
 
 async function main() {
   const today = new Date().toLocaleDateString("en-CA"); // local date, YYYY-MM-DD
-  const cb = (await listAllRoutines()).filter((r) => r.title.startsWith("CB "));
+  const prefixes = [`${ROUTINE_PREFIX} `, ...LEGACY_PREFIXES];
+  const cb = (await listAllRoutines()).filter((r) => prefixes.some((p) => r.title.startsWith(p)));
 
   const byTitle = new Map<string, HevyRoutineDto[]>();
   for (const r of cb) byTitle.set(r.title, [...(byTitle.get(r.title) ?? []), r]);
 
   const isPast = (title: string) => {
-    const m = /^CB W([0-9]+) (Mon|Wed|Fri|Sun)\b/.exec(title);
+    if (LEGACY_PREFIXES.some((p) => title.startsWith(p))) return true;
+    const m = GYM_TITLE.exec(title);
     const day = m && PROGRAM_DAYS.find((d) => d.key === m[2]);
     return Boolean(day) && dayDate(Number(m![1]), day!) < today;
   };
@@ -38,7 +46,7 @@ async function main() {
   }
   const byWeek = (a: string, b: string) => a.localeCompare(b);
 
-  console.log(`Comeback Block routines in Hevy: ${cb.length} (${byTitle.size} distinct titles), today ${today}`);
+  console.log(`Program routines in Hevy (${prefixes.map((p) => p.trim()).join(", ")}): ${cb.length} (${byTitle.size} distinct titles), today ${today}`);
   console.log(`Delete by hand in Hevy (the API cannot): ${past.length + stale.length}`);
   console.log(`PAST sessions (${past.length}):`);
   for (const t of past.sort(byWeek)) console.log(`  - ${t}`);

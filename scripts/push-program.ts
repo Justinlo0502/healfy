@@ -1,12 +1,13 @@
-// Pushes the Comeback Block (src/lib/program.ts) to Hevy as routines in a
-// "Comeback Block" folder: one routine per gym day per week (24), plus the
-// Thursday home session once. Creates any custom exercises the program needs
-// first. Safe to re-run: routines that already exist (by title) are updated in
-// place, except sessions whose date has passed, so a failed run can be retried.
+// Pushes the current block (src/lib/program.ts, now Regressive Underload) to
+// Hevy as routines in the block's folder (HEVY_FOLDER_TITLE): one routine per
+// gym day per week (24), plus the Thursday home session once. Creates the
+// folder and any custom exercises the program needs first. Safe to re-run:
+// routines that already exist (by title) are updated in place, except sessions
+// whose date has passed, so a failed run can be retried.
 //
-//   npx tsx scripts/push-comeback-block.ts --dry-run   # print what would be created
-//   npx tsx scripts/push-comeback-block.ts             # create in Hevy
-//   npx tsx scripts/push-comeback-block.ts --from-week 6   # resume after a 429
+//   npx tsx scripts/push-program.ts --dry-run   # print what would be created
+//   npx tsx scripts/push-program.ts             # create in Hevy
+//   npx tsx scripts/push-program.ts --from-week 6   # resume after a 429
 import "dotenv/config";
 import { db } from "../src/lib/db";
 import {
