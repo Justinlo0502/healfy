@@ -24,6 +24,12 @@ const STATUS: Record<ExerciseResult["status"], { label: string; className: strin
   "not-done": { label: "Not logged", className: "text-muted", Icon: CircleDashed },
 };
 
+/** Grid shared by planned rows and "also in the logged routine" rows: tier | name | planned | done. */
+export const LOGGED_ROW_CLASS =
+  "grid grid-cols-[56px_minmax(0,1fr)] gap-x-3 gap-y-1 border-b border-line px-5 py-3 last:border-b-0 sm:grid-cols-[56px_minmax(0,1.3fr)_136px_minmax(0,1fr)]";
+/** The done cell: under planned on mobile, a ruled column on desktop. */
+export const LOGGED_DONE_CELL_CLASS = "col-start-2 mt-1 sm:col-start-4 sm:mt-0 sm:border-l sm:border-line sm:pl-4";
+
 const TIERS = new Set<string>(["T1", "T2", "T3", "ELBOW", "CORE", "MOBILITY"]);
 
 function SetChip({
@@ -45,8 +51,16 @@ function SetChip({
       ? "border-good/40 bg-good-bg text-good"
       : "border-line bg-surface-2";
   return (
-    <span className={`rounded-md border px-1.5 py-0.5 font-mono text-xs tabular-nums ${tone}`}>
-      {set.lb > 0 ? `${set.lb} × ${set.reps}` : `${set.reps}`}
+    <span className={`whitespace-nowrap rounded-md border px-1.5 py-0.5 font-mono text-xs tabular-nums tracking-tight ${tone}`}>
+      {set.lb > 0 ? (
+        <>
+          {set.lb}
+          <span className="text-[0.85em] text-muted">×</span>
+          {set.reps}
+        </>
+      ) : (
+        set.reps
+      )}
       {amrap ? "+" : ""}
     </span>
   );
@@ -81,7 +95,7 @@ export function DoneCell({ r }: { r: ExerciseResult }) {
             );
           })}
           {r.topE1RM != null ? (
-            <span className="ml-1 font-mono text-[11px] text-muted">e1RM {r.topE1RM} lb</span>
+            <span className="ml-1 whitespace-nowrap font-mono text-[11px] text-muted">e1RM {r.topE1RM} lb</span>
           ) : null}
         </div>
       </div>
@@ -93,16 +107,19 @@ export function DoneCell({ r }: { r: ExerciseResult }) {
 function LooseRow({ r }: { r: ExerciseResult }) {
   const tier = (TIERS.has(r.tier) ? r.tier : "T3") as Tier;
   return (
-    <li className="grid grid-cols-[56px_minmax(0,1fr)] gap-x-3 gap-y-1 border-b border-line px-5 py-2.5 last:border-b-0">
-      <span className={`mt-0.5 inline-flex h-fit w-14 justify-center rounded px-1 py-0.5 font-mono text-[11px] font-semibold ${TIER_STYLE[tier]}`}>
+    <li className={LOGGED_ROW_CLASS} data-loose={r.hevyTitle}>
+      <span className={`mt-0.5 inline-flex h-fit w-14 justify-center rounded px-1 py-0.5 font-mono text-[11px] font-semibold tracking-wide ${TIER_STYLE[tier]}`}>
         {TIER_LABEL[tier]}
       </span>
-      <div className="min-w-0">
-        <p className="font-semibold">{r.name}</p>
-        <p className="font-mono text-xs text-muted">Planned {r.planned}</p>
-        <div className="mt-1">
-          <DoneCell r={r} />
-        </div>
+      <p className="min-w-0 font-semibold">{r.name}</p>
+      <p
+        data-cell="planned"
+        className="col-start-2 whitespace-nowrap font-mono text-[13px] tabular-nums text-muted sm:col-start-3 sm:self-start sm:pt-0.5 sm:text-right"
+      >
+        {r.planned}
+      </p>
+      <div data-cell="done" className={LOGGED_DONE_CELL_CLASS}>
+        <DoneCell r={r} />
         {r.notes ? <p className="mt-1 max-w-prose text-[13px] italic text-muted">&ldquo;{r.notes}&rdquo;</p> : null}
       </div>
     </li>

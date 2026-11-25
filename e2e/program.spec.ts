@@ -120,6 +120,70 @@ test("logged cards hide coaching cues behind one toggle and collapse the brief",
   }
 });
 
+test("moves logged outside the plan use the same grid, one line each on desktop", async ({ page }, testInfo) => {
+  await page.goto("/dashboard/program");
+  await page.getByRole("tab", { name: /^Week 1/ }).click();
+  const card = page.locator("article", { hasText: "Wed ·" }).filter({ visible: true }).first();
+  const loose = card.locator("li[data-loose]");
+  test.skip((await loose.count()) === 0, "Week 1 Wednesday has no extra logged moves");
+  await expect(card.getByText("Also in the logged routine")).toBeVisible();
+  // They are not planned rows, so they never count as `data-exercise`.
+  await expect(card.locator("li[data-exercise][data-loose]")).toHaveCount(0);
+  await expect(loose.first().locator('[data-cell="planned"]')).toHaveText(/^\d+ × \d+(-\d+)? @ \d+(\.\d+)? lb$/);
+
+  const planned = card.locator("li[data-exercise]").first();
+  const plannedTier = (await planned.locator("span").first().boundingBox())!;
+  for (const row of await loose.all()) {
+    const p = (await row.locator('[data-cell="planned"]').boundingBox())!;
+    const d = (await row.locator('[data-cell="done"]').boundingBox())!;
+    const t = (await row.locator("span").first().boundingBox())!;
+    expect(t.x).toBeCloseTo(plannedTier.x, 0);
+    if (testInfo.project.name === "desktop") {
+      expect(d.x).toBeGreaterThan(p.x + p.width - 1);
+      expect(Math.abs(d.y - p.y)).toBeLessThan(12);
+      // Up to three chips plus the e1RM stay on one line (a fourth set may wrap the e1RM).
+      const chips = await row.locator('[data-cell="done"] span.font-mono').count();
+      if (chips <= 4) expect((await row.boundingBox())!.height).toBeLessThan(chips <= 3 ? 56 : 80);
+    } else {
+      expect(d.y).toBeGreaterThan(p.y + p.height - 1);
+    }
+  }
+});
+
+test("set chips are compact and logged cards fit the phone width", async ({ page }, testInfo) => {
+  await page.goto("/dashboard/program");
+  for (const week of [1, 2]) {
+    await page.getByRole("tab", { name: new RegExp(`^Week ${week}`) }).click();
+    for (const day of ["Mon", "Wed", "Fri", "Sun"]) {
+      const card = page.locator("article", { hasText: `${day} ·` }).filter({ visible: true }).first();
+      if ((await card.getByRole("region", { name: "Planned versus done" }).count()) === 0) continue;
+      const box = (await card.boundingBox())!;
+      const first = card.locator('[data-cell="done"] span.font-mono').first();
+      await expect(first).toHaveText(/^\d+(\.\d+)?×\d+\+?$/);
+      // Chips, e1RM labels and the header's pieces stay inside the card.
+      const inside = card.locator('[data-cell="done"] span.font-mono, [data-cell="done"] span.rounded-md, h3, h3 span, label, header, article > div:first-child p');
+      for (const el of await inside.all()) {
+        const b = await el.boundingBox();
+        if (!b) continue;
+        expect(b.x).toBeGreaterThanOrEqual(box.x - 1);
+        expect(b.x + b.width).toBeLessThanOrEqual(box.x + box.width + 1);
+      }
+      const overflow = await page.evaluate(() => document.scrollingElement!.scrollWidth - document.scrollingElement!.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+      if (testInfo.project.name !== "desktop") {
+        // Header pieces wrap, never overlap: the Show cues pill and the minutes sit below or beside the title, not on it.
+        const h3 = (await card.locator("h3").boundingBox())!;
+        const pill = (await card.locator("label").boundingBox())!;
+        const mins = (await card.getByText(/^≈\d+ min$/).boundingBox())!;
+        for (const b of [pill, mins]) {
+          const apart = b.y >= h3.y + h3.height - 1 || b.x >= h3.x + h3.width - 1 || b.y + b.height <= h3.y + 1;
+          expect(apart).toBe(true);
+        }
+      }
+    }
+  }
+});
+
 test("sessions that are not logged yet have no report", async ({ page }) => {
   await page.goto("/dashboard/program");
   await page.getByRole("tab", { name: /^Week 6/ }).click();

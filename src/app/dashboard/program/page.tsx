@@ -21,7 +21,7 @@ import {
   type ProgramDay,
 } from "@/lib/program";
 import { CalendarDays, CircleCheck, Waves } from "lucide-react";
-import SessionReport, { DoneCell } from "./SessionReport";
+import SessionReport, { DoneCell, LOGGED_DONE_CELL_CLASS, LOGGED_ROW_CLASS } from "./SessionReport";
 import WeekTabs from "./WeekTabs";
 import { TIER_LABEL, TIER_STYLE } from "./tiers";
 
@@ -137,11 +137,11 @@ function DayCard({
           return (
             <li
               key={`${ex.name}-${i}`}
-              className={`grid gap-x-3 gap-y-1 border-b border-line px-5 py-3 last:border-b-0 ${
+              className={
                 report
-                  ? "grid-cols-[56px_minmax(0,1fr)] sm:grid-cols-[56px_minmax(0,1.3fr)_136px_minmax(0,1fr)]"
-                  : "grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[64px_minmax(0,1fr)_auto]"
-              }`}
+                  ? LOGGED_ROW_CLASS
+                  : "grid grid-cols-[64px_minmax(0,1fr)] gap-x-3 gap-y-1 border-b border-line px-5 py-3 last:border-b-0 sm:grid-cols-[64px_minmax(0,1fr)_auto]"
+              }
               data-exercise={report ? ex.hevyTitle : undefined}
             >
               <span
@@ -153,7 +153,7 @@ function DayCard({
                 <p className="font-semibold">
                   {ex.name}
                   {pos ? (
-                    <span className="ml-2 rounded bg-surface-2 px-1.5 py-0.5 align-middle font-mono text-[11px] font-semibold text-muted">
+                    <span className="ml-2 whitespace-nowrap rounded bg-surface-2 px-1.5 py-0.5 align-middle font-mono text-[11px] font-semibold text-muted">
                       Superset {pos}
                     </span>
                   ) : null}
@@ -178,7 +178,7 @@ function DayCard({
                 {rest ? <p className="whitespace-nowrap text-xs text-muted">rest {rest}</p> : null}
               </div>
               {report ? (
-                <div data-cell="done" className="col-start-2 mt-1 sm:col-start-4 sm:mt-0 sm:border-l sm:border-line sm:pl-4">
+                <div data-cell="done" className={LOGGED_DONE_CELL_CLASS}>
                   {result ? <DoneCell r={result} /> : <span className="text-xs text-muted">Not logged</span>}
                   {result?.notes ? (
                     <p className="mt-1 max-w-prose text-[13px] italic text-muted">&ldquo;{result.notes}&rdquo;</p>

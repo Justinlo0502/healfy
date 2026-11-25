@@ -18,6 +18,8 @@ export default defineConfig({
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["Pixel 7"] } },
+    // Smallest phone width the layout has to survive.
+    { name: "small", use: { ...devices["Pixel 7"], viewport: { width: 360, height: 740 } } },
   ],
   webServer: process.env.E2E_BASE_URL
     ? undefined
