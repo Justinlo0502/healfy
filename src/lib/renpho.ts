@@ -66,27 +66,35 @@ type Session = { token: string; userId: string };
 /**
  * POSTs an encrypted body and returns the decrypted response text. `body:
  * null` sends an encrypted empty payload, which some endpoints require.
+ *
+ * appVersion/platform go on every request, login included: without them
+ * Renpho can't pick the matching key and rejects the body with code -114
+ * ("Decryption failed").
  */
 async function renphoPost(path: string, body: unknown, session?: Session): Promise<string> {
   const res = await fetch(`${BASE_URL}/${path}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(session
-        ? { token: session.token, userId: session.userId, appVersion: APP_VERSION, platform: "android" }
-        : {}),
+      appVersion: APP_VERSION,
+      platform: "android",
+      ...(session ? { token: session.token, userId: session.userId } : {}),
     },
     body: JSON.stringify({ encryptData: encrypt(body === null ? "" : JSON.stringify(body)) }),
   });
 
-  let json: { code?: number; msg?: string; data?: string };
+  // Success responses carry `msg`; error responses carry `message`.
+  let json: { code?: number; msg?: string; message?: string; data?: string };
   try {
     json = await res.json();
   } catch {
     throw new RenphoApiError(`Renpho ${path} returned non-JSON (HTTP ${res.status})`, null);
   }
   if (json.code !== SUCCESS_CODE) {
-    throw new RenphoApiError(`Renpho ${path} failed: ${json.msg ?? "unknown error"}`, json.code ?? null);
+    throw new RenphoApiError(
+      `Renpho ${path} failed (code ${json.code}): ${json.msg ?? json.message ?? "unknown error"}`,
+      json.code ?? null
+    );
   }
   if (!json.data) throw new RenphoApiError(`Renpho ${path} returned no data`, json.code);
   return decrypt(json.data);
