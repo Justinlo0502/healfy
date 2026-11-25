@@ -31,7 +31,7 @@ import { TIER_LABEL, TIER_STYLE } from "./tiers";
 const WEEK_STRIP: { day: string; text: string; paddle?: boolean; home?: boolean; rest?: boolean }[] = [
   { day: "Mon", text: "Bench volume · Deadlift volume · DB press", paddle: true },
   { day: "Tue", text: "Off", rest: true },
-  { day: "Wed", text: "Close-grip bench · Squat · Incline", paddle: true },
+  { day: "Wed", text: "Paused bench · Squat · Incline", paddle: true },
   { day: "Thu", text: "Home mobility + elbow", home: true },
   { day: "Fri", text: "Bench heavy · Deadlift heavy · Pull-up volume" },
   { day: "Sat", text: "Off", rest: true },
@@ -193,8 +193,8 @@ export default async function ProgramPage() {
         </p>
         <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">{PROGRAM_NAME}</h1>
         <p className="mt-2 max-w-2xl text-sm opacity-90">
-          The volume block after the Comeback Block. Bench runs 3× a week, always first: 5 × 8 Monday, close-grip
-          Wednesday, 5 × 5+ Friday, in the day order from Zourdos et al. (2016). Deadlift twice (GZCLP&apos;s heavy and
+          The volume block after the Comeback Block. Bench runs 3× a week, always first: 5 × 8 Monday, paused
+          bench Wednesday, 5 × 5+ Friday, in the day order from Zourdos et al. (2016). Deadlift twice (GZCLP&apos;s heavy and
           light pair), squat once, and Friday pull-ups train for the AMRAP test. Weeks 1–5 add sets, then weight; week 6
           is a deload.
         </p>
@@ -252,18 +252,18 @@ export default async function ProgramPage() {
           <ul className="flex list-disc flex-col gap-2 pl-5 text-sm">
             <li>
               <b>Volume first.</b> This block grows by adding sets before weight. Monday bench goes 4 × 8 → 5 × 8 at
-              150, then the same again at 155. Weeks 1–5 build and week 6 is a deload.
+              one load, then the same again 5 lb higher. Weeks 1–5 build and week 6 is a deload.
             </li>
             <li>
-              <b>Bench, 3 days.</b> Monday 5 × 8 at 150 → 160. Wednesday close-grip 4 × 6 at 140 → 155. Friday
-              5 × 5+ at 175 → 190, with the last set AMRAP. An AMRAP of 8+ adds an extra 5 lb.
+              <b>Bench, 3 days.</b> Monday 4–5 × 8 at 150 → 170. Wednesday paused bench 4 × 5 at 165 → 175. Friday
+              5 × 5+ at 175 → 195, with the last set AMRAP. An AMRAP of 8+ adds an extra 5 lb.
             </li>
             <li>
               <b>Heavy days (GZCLP T1):</b> Friday deadlift 5 × 3+ and Sunday weighted pull-up 5 × 3+. Every set at
               target: +10 lb on deadlift (+5 from week 3), +5 lb on pull-ups. A missed set repeats the weight.
             </li>
             <li>
-              <b>Fixed-rep days:</b> Monday deadlift 3 × 8, Wednesday squat 5 × 5, Monday bench, close-grip. Every set
+              <b>Fixed-rep days:</b> Monday deadlift 3 × 8, Wednesday squat 5 × 5, Monday bench, paused bench. Every set
               at target → +5 lb next week, otherwise repeat.
             </li>
             <li>
@@ -319,8 +319,8 @@ export default async function ProgramPage() {
               are gone, since they were skipped most weeks.
             </li>
             <li>
-              <b>Watch the load:</b> this block raises both pressing (about 20 sets a week) and pulling volume. Close-grip
-              bench uses a grip just inside shoulder width, not narrow. Hammer curls stay at 25s.
+              <b>Watch the load:</b> this block raises both pressing (about 20 sets a week) and pulling volume. Paused
+              bench is a 1 s still pause on the chest, no bounce. Hammer curls stay at 25s.
             </li>
             <li>
               <b>Pain rule:</b> up to 3/10 during an exercise is fine if it&apos;s back to normal by the next morning. If
@@ -360,9 +360,9 @@ export default async function ProgramPage() {
             Zourdos et al. (2016) and the last block.
           </p>
           <p>
-            <b>Close-grip instead of paused bench on Wednesday.</b> A pause mostly helps lifters who compete with one.
-            Close-grip bench is the usual higher-rep middle-day variation (it is the hypertrophy-day lift in Stronger by
-            Science&apos;s DUP template), and it adds triceps and lockout work.
+            <b>Paused bench on Wednesday.</b> Close-grip was tried in week 1, then you asked to go back to paused bench
+            after the 225 attempt on Nov 13 stalled near the end of the rep. A paused rep removes the bounce and builds
+            strength from a dead stop, which suits a lighter, higher-rep middle day.
           </p>
           <p>
             <b>Deadlift twice, squat once.</b> GZCLP trains each main lift twice a week, once heavy (5 × 3+) and once

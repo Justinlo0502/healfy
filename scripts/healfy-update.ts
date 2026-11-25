@@ -74,7 +74,7 @@ type Proposal = {
 //    pull-up 5×3+): every set at target reps → next load = load lifted + step
 //    (deadlift 10, pull-up 5, bench 5). A miss on any set repeats the load.
 //    Bench heavy: an AMRAP 3+ reps over target (8+ on 5s) adds an extra 5 lb.
-//  - Fixed-rep compounds (Mon bench 5×8, Mon deadlift 3×8, Wed close-grip 4×6,
+//  - Fixed-rep compounds (Mon bench 5×8, Mon deadlift 3×8, Wed paused bench 4×5,
 //    Wed squat 5×5): every set at target reps → +5 lb; otherwise repeat.
 //  - Friday bodyweight pull-ups are a rep total with no load: judge by hand.
 //  - Accessories with a rep range: every set at the top of the range → the

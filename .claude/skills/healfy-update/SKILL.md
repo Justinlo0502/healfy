@@ -50,7 +50,7 @@ Use the "Proposed loads" section as the starting point. The rules it encodes (fr
 
 - T1 AMRAP lifts (Fri bench heavy 5×5+, Fri deadlift 5×3+, Sun weighted pull-up 5×3+): every set at target → load lifted + step
   (deadlift 10, pull-up 5, bench 5). A miss repeats the load. Bench heavy AMRAP of 8+ (target + 3) adds an extra 5 lb.
-- Fixed-rep compounds (Mon bench volume, Mon deadlift 3×8, Wed close-grip 4×6, Wed squat 5×5): every set at target → +5, otherwise
+- Fixed-rep compounds (Mon bench volume, Mon deadlift 3×8, Wed paused bench 4×5, Wed squat 5×5): every set at target → +5, otherwise
   repeat. Monday bench adds a set before it adds weight (4×8 → 5×8), so a clean 4×8 week moves to 5×8 at the same load.
 - Friday bodyweight pull-ups are a weekly rep total (one max set, then sets of 6–7): note the max set and the total, and keep the
   planned totals unless the max set moved a lot. Week 6 Friday is the AMRAP test.
@@ -61,7 +61,7 @@ Use the "Proposed loads" section as the starting point. The rules it encodes (fr
 
 Apply by editing `src/lib/program.ts` for sessions still to come only (never touch a past week's numbers):
 
-- Ladder arrays (`BENCH_VOLUME`, `CLOSE_GRIP`, `BENCH_HEAVY`, `SQUAT`, `DEADLIFT_VOLUME`, `DEADLIFT_HEAVY`, `PULLUP_HEAVY`, `PULLUP_VOLUME`) and
+- Ladder arrays (`BENCH_VOLUME`, `PAUSED_BENCH`, `BENCH_HEAVY`, `SQUAT`, `DEADLIFT_VOLUME`, `DEADLIFT_HEAVY`, `PULLUP_HEAVY`, `PULLUP_VOLUME`) and
   accessory `weightLb`/`loadLabel` values.
 - Rewrite the exercise's `cue` so it states the latest logged result ("You did X on <date>") and the rule for the next jump.
   Replace stale history, do not stack it.

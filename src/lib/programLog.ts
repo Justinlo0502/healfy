@@ -6,6 +6,31 @@ export type ProgramLogEntry = { date: string; title: string; changes: string[] }
 
 export const PROGRAM_LOG: ProgramLogEntry[] = [
   {
+    date: "2026-11-24",
+    title: "After Week 1 Wed, Fri, Sun and Week 2 Mon",
+    changes: [
+      "Wednesday goes back to paused bench, at your request, replacing close-grip. It is 4 × 5 at 165 (165 × 5, 5, 5, 4 on Nov 18), then 170, 170, 175, with a 145 deload.",
+      "Monday bench rebased to 160 (160 × 8 × 5 on Nov 23, 155 × 8 × 4 on Nov 16): 4 × 8 at 165 in week 3, 5 × 8 at 165 in week 4, 5 × 8 at 170 in week 5.",
+      "Friday bench heavy repeats 185 in week 2 (185 × 4 × 5 on Nov 20, a rep short on every set), then 190, 190, 195.",
+      "Not logged, so the ladders hold: squat stays at 200 in week 2 (lunges on Nov 18), Friday deadlift at 255 in week 2 (skipped Nov 20) and Monday deadlift at 230 in week 3 (nothing on Nov 23). Later weeks shift one step. The plan keeps these lifts until you say why they were swapped.",
+      "Sunday weighted pull-up repeats +65 in week 2 (+65 × 3, 3, 2 then +62.5 × 3, 3 on Nov 22), then +70, +75, +75.",
+      "Friday pull-ups keep their planned totals. 18, 8, 5, 4, 4, 3 on Nov 20 gave 42 reps and a new best max set of 18.",
+      "Accessories: DB press to 50s (50s × 6, 7, 7 on Nov 23). Back extension to 95 (90 × 10, 10, 10 on Nov 20). Upper back row to 140 with a 6–10 range (140 × 6, 6, 6 on Nov 22). Hammer curl, single-arm row, lateral raise, decline sit-up and Smith incline stay and add reps.",
+      "Rear delt fly and triceps extension replaced by the Nautilus rear delt fly (50 lb) and the cable pushdown (50 lb), both 3 × 8–12, after you swapped to them on Nov 16 and Nov 23.",
+      "Unplanned hip work (adduction, abduction, machine hip thrust) appeared on Nov 18 and Nov 23 and sessions ran 86 and 79 minutes. Not programmed yet.",
+    ],
+  },
+  {
+    date: "2026-11-16",
+    title: "After Week 1 Mon",
+    changes: [
+      "Monday bench: 155 × 8, 8, 8, 8 on Nov 16 (planned 4 × 8 at 150). The ladder now climbs from 155: week 2 is 5 × 8 at 155, week 3 4 × 8 at 160, week 4 5 × 8 at 160, week 5 5 × 8 at 165. Week 6 deload unchanged at 3 × 5 at 135.",
+      "Monday deadlift: 225 × 8, 8, 8 on Nov 16, on plan. Week 2 stays 230 × 8 × 3. Cue updated to the latest sets.",
+      "DB shoulder press: 45s × 9, 9, 9 on Nov 16, short of the top of 8–10, so it stays at 45s. The report suggested 50s, but this is a rep-range move: it goes up after all three sets hit 10.",
+      "Rear delt fly (cable 10 lb) and triceps extension (Nautilus 60 lb) were swapped once, with no note, for the Nautilus rear delt fly (50 × 6, 6, 6) and the cable pushdown (45 × 8, 50 × 6, 6). The plan is unchanged for now.",
+    ],
+  },
+  {
     date: "2026-11-15",
     title: "Regressive Underload built from the end of the Comeback Block",
     changes: [
