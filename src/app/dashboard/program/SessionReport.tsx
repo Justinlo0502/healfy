@@ -45,91 +45,78 @@ function SetChip({
       ? "border-good/40 bg-good-bg text-good"
       : "border-line bg-surface-2";
   return (
-    <span className={`rounded-lg border px-2 py-1 font-mono text-xs tabular-nums ${tone}`}>
+    <span className={`rounded-md border px-1.5 py-0.5 font-mono text-xs tabular-nums ${tone}`}>
       {set.lb > 0 ? `${set.lb} × ${set.reps}` : `${set.reps}`}
       {amrap ? "+" : ""}
     </span>
   );
 }
 
-function ExerciseRow({ r }: { r: ExerciseResult }) {
+/** The "done" half of a planned row: logged set chips, a status icon and the e1RM. */
+export function DoneCell({ r }: { r: ExerciseResult }) {
   const status = STATUS[r.status];
-  const tier = (TIERS.has(r.tier) ? r.tier : "T3") as Tier;
   const slots = Math.max(r.plannedSets, r.sets.length);
   return (
-    <li className="flex flex-col gap-2 border-b border-line px-5 py-3 last:border-b-0">
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <p className="flex items-center gap-2 font-semibold">
-          <span
-            className={`inline-flex w-12 justify-center rounded px-1 py-0.5 font-mono text-[10px] font-semibold ${TIER_STYLE[tier]}`}
-          >
-            {TIER_LABEL[tier]}
-          </span>
-          {r.name}
-        </p>
-        <span className={`inline-flex items-center gap-1 text-xs font-semibold ${status.className}`}>
-          <status.Icon className="h-4 w-4" strokeWidth={2.5} />
-          {status.label}
-        </span>
-      </div>
-      <div className="flex flex-wrap items-center gap-1.5">
-        {Array.from({ length: slots }, (_, i) => {
-          const set = r.sets[i];
-          return set ? (
-            <SetChip
-              key={i}
-              set={set}
-              plannedReps={r.plannedReps}
-              plannedLb={r.plannedLb}
-              amrap={r.amrapReps != null && i === r.sets.length - 1}
-            />
-          ) : (
-            <span key={i} className="rounded-lg border border-dashed border-line px-2 py-1 font-mono text-xs text-muted">
-              –
-            </span>
-          );
-        })}
-      </div>
-      <p className="flex flex-wrap gap-x-3 gap-y-0.5 font-mono text-xs text-muted">
-        <span>Planned {r.planned}</span>
-        {r.topE1RM != null ? <span>e1RM {r.topE1RM} lb</span> : null}
-      </p>
-      {r.notes ? <p className="max-w-prose text-[13px] italic text-muted">&ldquo;{r.notes}&rdquo;</p> : null}
-    </li>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  sub,
-  bar,
-  warn,
-}: {
-  label: string;
-  value: string;
-  sub?: string;
-  bar: number;
-  warn?: boolean;
-}) {
-  return (
-    <div className="min-w-0 rounded-xl border border-line bg-surface-2 px-3 py-2.5">
-      <p className="font-mono text-[11px] uppercase tracking-wide text-muted">{label}</p>
-      <p className="mt-0.5 text-xl font-bold tabular-nums">
-        {value}
-        {sub ? <span className="ml-1 text-xs font-medium text-muted">{sub}</span> : null}
-      </p>
-      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-line">
-        <div
-          className={`h-full rounded-full ${warn ? "bg-warn" : "bg-good"}`}
-          style={{ width: `${Math.min(100, Math.round(bar * 100))}%` }}
-        />
+    <div className="flex min-w-0 items-start gap-2">
+      <span className={`mt-1 inline-flex shrink-0 items-center ${status.className}`} title={status.label}>
+        <status.Icon className="h-4 w-4" strokeWidth={2.5} aria-hidden />
+        <span className="sr-only">{status.label}</span>
+      </span>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-1">
+          {Array.from({ length: slots }, (_, i) => {
+            const set = r.sets[i];
+            return set ? (
+              <SetChip
+                key={i}
+                set={set}
+                plannedReps={r.plannedReps}
+                plannedLb={r.plannedLb}
+                amrap={r.amrapReps != null && i === r.sets.length - 1}
+              />
+            ) : (
+              <span key={i} className="rounded-md border border-dashed border-line px-1.5 py-0.5 font-mono text-xs text-muted">
+                –
+              </span>
+            );
+          })}
+        </div>
+        {r.topE1RM != null ? <p className="mt-0.5 font-mono text-[11px] text-muted">e1RM {r.topE1RM} lb</p> : null}
       </div>
     </div>
   );
 }
 
-export default function SessionReport({ report, briefing }: { report: Report; briefing?: Briefing }) {
+/** A logged move that has no row in the planned list (dropped from the program since, or renamed). */
+function LooseRow({ r }: { r: ExerciseResult }) {
+  const tier = (TIERS.has(r.tier) ? r.tier : "T3") as Tier;
+  return (
+    <li className="grid grid-cols-[56px_minmax(0,1fr)] gap-x-3 gap-y-1 border-b border-line px-5 py-2.5 last:border-b-0">
+      <span className={`mt-0.5 inline-flex h-fit w-14 justify-center rounded px-1 py-0.5 font-mono text-[11px] font-semibold ${TIER_STYLE[tier]}`}>
+        {TIER_LABEL[tier]}
+      </span>
+      <div className="min-w-0">
+        <p className="font-semibold">{r.name}</p>
+        <p className="font-mono text-xs text-muted">Planned {r.planned}</p>
+        <div className="mt-1">
+          <DoneCell r={r} />
+        </div>
+        {r.notes ? <p className="mt-1 max-w-prose text-[13px] italic text-muted">&ldquo;{r.notes}&rdquo;</p> : null}
+      </div>
+    </li>
+  );
+}
+
+export default function SessionReport({
+  report,
+  briefing,
+  loose = [],
+}: {
+  report: Report;
+  briefing?: Briefing;
+  /** Results with no row in the planned list above. */
+  loose?: ExerciseResult[];
+}) {
   const { results } = report;
   const plannedSets = results.reduce((n, r) => n + r.plannedSets, 0);
   const doneSets = results.reduce((n, r) => n + Math.min(r.sets.length, r.plannedSets), 0);
@@ -140,65 +127,61 @@ export default function SessionReport({ report, briefing }: { report: Report; br
 
   return (
     <section aria-label="Planned versus done" className="border-t-2 border-line">
-      <div className="flex flex-wrap items-center justify-between gap-2 px-5 pb-1 pt-4">
-        <h4 className="text-base font-semibold">Planned vs done</h4>
-        {verdict ? (
-          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${verdict.className}`}>
-            {verdict.label}
-          </span>
-        ) : null}
-      </div>
+      {loose.length ? (
+        <ul className="border-b border-line">
+          <li className="border-b border-line bg-surface-2 px-5 py-1.5 font-mono text-[11px] uppercase tracking-wide text-muted">
+            Also in the logged routine
+          </li>
+          {loose.map((r) => (
+            <LooseRow key={r.hevyTitle} r={r} />
+          ))}
+        </ul>
+      ) : null}
 
-      <div className="grid grid-cols-1 gap-2 px-5 py-3 sm:grid-cols-3">
-        <Stat
-          label="Exercises on plan"
-          value={`${onPlan}/${results.length}`}
-          bar={results.length ? onPlan / results.length : 0}
-          warn={onPlan < results.length / 2}
-        />
-        <Stat
-          label="Sets done"
-          value={`${doneSets}/${plannedSets}`}
-          bar={plannedSets ? doneSets / plannedSets : 0}
-          warn={doneSets < plannedSets * 0.75}
-        />
-        {report.minutes != null ? (
-          <Stat
-            label="Time"
-            value={`${report.minutes}`}
-            sub={`min · cap ${SESSION_CAP_MIN}`}
-            bar={report.minutes / SESSION_CAP_MIN}
-            warn={over}
-          />
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-5 py-3 text-sm">
+        {verdict ? (
+          <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${verdict.className}`}>{verdict.label}</span>
         ) : null}
+        <p className="flex flex-wrap gap-x-2 font-mono text-xs tabular-nums text-muted">
+          <span className={onPlan < results.length / 2 ? "text-warn" : undefined}>
+            <b className="text-foreground">{onPlan}/{results.length}</b> on plan
+          </span>
+          <span aria-hidden>·</span>
+          <span className={doneSets < plannedSets * 0.75 ? "text-warn" : undefined}>
+            <b className="text-foreground">{doneSets}/{plannedSets}</b> sets
+          </span>
+          {report.minutes != null ? (
+            <>
+              <span aria-hidden>·</span>
+              <span className={over ? "text-warn" : undefined}>
+                <b className="text-foreground">{report.minutes}</b> / {SESSION_CAP_MIN} min
+              </span>
+            </>
+          ) : null}
+        </p>
       </div>
 
       {briefing ? <p className="max-w-prose px-5 pb-3 text-sm">{briefing.summary}</p> : null}
 
-      <ul className="border-t border-line">
-        {results.map((r) => (
-          <ExerciseRow key={r.name} r={r} />
-        ))}
-      </ul>
-
       {report.substitutions.length || extras.length ? (
-        <div className="flex flex-col gap-2 border-t border-line px-5 py-3 text-sm">
-          {report.substitutions.map((s) => (
-            <p key={s.dropped} className="flex items-start gap-2">
-              <ArrowRightLeft className="mt-0.5 h-4 w-4 shrink-0 text-accent2" strokeWidth={2.5} />
-              <span>
-                Swapped <b>{s.dropped}</b> for <b>{s.added}</b>
-              </span>
-            </p>
-          ))}
+        <div className="flex flex-col gap-1.5 border-t border-line px-5 py-2.5 text-sm">
+          {report.substitutions.map((s) => {
+            const added = report.added.find((a) => a.name === s.added);
+            return (
+              <p key={s.dropped} className="flex items-start gap-2">
+                <ArrowRightLeft className="mt-0.5 h-4 w-4 shrink-0 text-accent2" strokeWidth={2.5} />
+                <span>
+                  Swapped <b>{s.dropped}</b> for <b>{s.added}</b>
+                  {added ? <span className="ml-1.5 font-mono text-xs text-muted">{setsText(added.sets)}</span> : null}
+                </span>
+              </p>
+            );
+          })}
           {extras.map((a) => (
             <p key={a.name} className="flex items-start gap-2">
               <Plus className="mt-0.5 h-4 w-4 shrink-0 text-accent2" strokeWidth={2.5} />
               <span>
-                Added <b>{a.name}</b>{" "}
-                <span className="font-mono text-xs text-muted">
-                  {a.sets.map((s) => (s.lb > 0 ? `${s.lb}×${s.reps}` : s.reps)).join(", ")}
-                </span>
+                Added <b>{a.name}</b> <span className="font-mono text-xs text-muted">{setsText(a.sets)}</span>
               </span>
             </p>
           ))}
@@ -206,9 +189,9 @@ export default function SessionReport({ report, briefing }: { report: Report; br
       ) : null}
 
       {briefing ? (
-        <div className="border-t border-line px-5 py-3">
+        <div className="border-t border-line px-5 py-2.5">
           <p className="font-mono text-[11px] uppercase tracking-wide text-muted">Brief · {briefing.date}</p>
-          <ul className="mt-1.5 flex max-w-prose list-disc flex-col gap-1.5 pl-5 text-[13px] text-muted">
+          <ul className="mt-1 flex max-w-prose list-disc flex-col gap-1 pl-5 text-[13px] text-muted">
             {briefing.highlights.map((h, i) => (
               <li key={i}>{h}</li>
             ))}
@@ -218,3 +201,5 @@ export default function SessionReport({ report, briefing }: { report: Report; br
     </section>
   );
 }
+
+const setsText = (sets: LoggedSet[]) => sets.map((s) => (s.lb > 0 ? `${s.lb}×${s.reps}` : s.reps)).join(", ");

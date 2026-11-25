@@ -21,7 +21,7 @@ import {
   type ProgramDay,
 } from "@/lib/program";
 import { CalendarDays, CircleCheck, Waves } from "lucide-react";
-import SessionReport from "./SessionReport";
+import SessionReport, { DoneCell } from "./SessionReport";
 import WeekTabs from "./WeekTabs";
 import { TIER_LABEL, TIER_STYLE } from "./tiers";
 
@@ -59,6 +59,15 @@ function DayCard({
 }) {
   const date = dayDate(week, day);
   const isToday = date === today;
+  const exercises = exercisesFor(day, week);
+  // Line each planned row up with its logged result by Hevy title (ExerciseResult.hevyTitle).
+  const pending = new Map((report?.results ?? []).map((r) => [r.hevyTitle, r]));
+  const resultFor = exercises.map((ex) => {
+    const r = pending.get(ex.hevyTitle);
+    pending.delete(ex.hevyTitle);
+    return r;
+  });
+  const loose = [...pending.values()];
   return (
     <article
       className={`overflow-hidden rounded-2xl border bg-surface shadow-card ${isToday ? "border-accent" : "border-line"}`}
@@ -90,16 +99,32 @@ function DayCard({
 
       <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note(week)}</p>
 
+      {report ? (
+        <div
+          aria-hidden
+          className="hidden grid-cols-[56px_minmax(0,1.3fr)_136px_minmax(0,1fr)] gap-x-3 border-b border-line bg-surface-2 px-5 py-1.5 font-mono text-[11px] uppercase tracking-wide text-muted sm:grid"
+        >
+          <span className="col-start-2">Exercise</span>
+          <span className="text-right">Planned</span>
+          <span>Done</span>
+        </div>
+      ) : null}
       <ul>
-        {exercisesFor(day, week).map((ex, i, list) => {
+        {exercises.map((ex, i, list) => {
           const rx = ex.rx(week);
           const pos = ex.superset ? supersetPosition(list, i) : null;
           const ramp = ex.ramp?.(week);
           const rest = restLabel(ex.restSeconds);
+          const result = resultFor[i];
           return (
             <li
               key={`${ex.name}-${i}`}
-              className="grid grid-cols-[64px_minmax(0,1fr)] gap-x-3 gap-y-1 border-b border-line px-5 py-3 last:border-b-0 sm:grid-cols-[64px_minmax(0,1fr)_auto]"
+              className={`grid gap-x-3 gap-y-1 border-b border-line px-5 py-3 last:border-b-0 ${
+                report
+                  ? "grid-cols-[56px_minmax(0,1fr)] sm:grid-cols-[56px_minmax(0,1.3fr)_136px_minmax(0,1fr)]"
+                  : "grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[64px_minmax(0,1fr)_auto]"
+              }`}
+              data-exercise={report ? ex.hevyTitle : undefined}
             >
               <span
                 className={`mt-0.5 inline-flex h-fit w-14 justify-center rounded px-1 py-0.5 font-mono text-[11px] font-semibold tracking-wide ${TIER_STYLE[ex.tier]}`}
@@ -123,17 +148,25 @@ function DayCard({
                 ) : null}
                 {ramp ? <p className="mt-1 font-mono text-xs text-muted">Ramp: {rampLabel(ramp)}</p> : null}
               </div>
-              <div className="col-start-2 font-mono tabular-nums sm:col-start-3 sm:text-right">
+              <div data-cell="planned" className="col-start-2 font-mono tabular-nums sm:col-start-3 sm:text-right">
                 <p className="whitespace-nowrap text-[15px] font-medium">{schemeLabel(rx)}</p>
                 {rx.loadLabel ? <p className="whitespace-nowrap text-xs text-muted">{rx.loadLabel}</p> : null}
                 {rest ? <p className="whitespace-nowrap text-xs text-muted">rest {rest}</p> : null}
               </div>
+              {report ? (
+                <div data-cell="done" className="col-start-2 mt-1 sm:col-start-4 sm:mt-0">
+                  {result ? <DoneCell r={result} /> : <span className="text-xs text-muted">Not logged</span>}
+                  {result?.notes ? (
+                    <p className="mt-1 max-w-prose text-[13px] italic text-muted">&ldquo;{result.notes}&rdquo;</p>
+                  ) : null}
+                </div>
+              ) : null}
             </li>
           );
         })}
       </ul>
 
-      {report ? <SessionReport report={report} briefing={briefing} /> : null}
+      {report ? <SessionReport report={report} briefing={briefing} loose={loose} /> : null}
     </article>
   );
 }

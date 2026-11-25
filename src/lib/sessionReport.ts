@@ -17,6 +17,8 @@ export type LoggedSet = { lb: number; reps: number };
 
 export type ExerciseResult = {
   name: string;
+  /** Hevy exercise title, which is also ProgramExercise.hevyTitle: the key that lines a result up with its planned row. */
+  hevyTitle: string;
   tier: string;
   planned: string; // e.g. "5 × 3+ @ 205 lb"
   plannedSets: number;
@@ -92,6 +94,7 @@ export function analyse(
 
   return {
     name,
+    hevyTitle: planned?.title ?? logged?.title ?? ex?.hevyTitle ?? name,
     tier: ex?.tier ?? "T3",
     planned: `${plan.length} × ${plannedReps}${isAmrap(ex, week) ? "+" : ""}${plannedLb != null ? ` @ ${plannedLb} lb` : ""}`,
     plannedSets: plan.length,
