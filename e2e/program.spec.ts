@@ -50,9 +50,9 @@ test("logged sessions show planned and done side by side in each exercise row", 
     expect(dBox.y).toBeGreaterThan(pBox.y + pBox.height - 1);
   }
 
-  // Compact: logged cards used to be 1826px (desktop) / 2986px (mobile) for Week 1 Monday.
+  // Compact: Week 1 Monday used to be 1307px (desktop) / 2402px (mobile) before cues and the brief collapsed.
   const height = (await monday.boundingBox())!.height;
-  expect(height).toBeLessThan(testInfo.project.name === "desktop" ? 1600 : 2700);
+  expect(height).toBeLessThan(testInfo.project.name === "desktop" ? 780 : 1350);
 
   // No horizontal page scroll, and nothing in the card spills out sideways.
   const overflow = await page.evaluate(() => {
@@ -68,9 +68,68 @@ test("logged sessions show planned and done side by side in each exercise row", 
   await monday.screenshot({ path: testInfo.outputPath(`week1-mon-${testInfo.project.name}.png`) });
 });
 
+test("logged cards hide coaching cues behind one toggle and collapse the brief", async ({ page }, testInfo) => {
+  await page.goto("/dashboard/program");
+  await page.getByRole("tab", { name: /^Week 1/ }).click();
+  const sunday = page.locator("article", { hasText: "Sun ·" }).filter({ visible: true }).first();
+  test.skip((await sunday.getByRole("region", { name: "Planned versus done" }).count()) === 0, "Week 1 Sunday is not logged yet");
+
+  const toggle = sunday.getByRole("checkbox", { name: /cues/i });
+  await expect(toggle).toHaveCount(1);
+  const cue = sunday.getByText(/^Superset with the single-arm row/);
+  const warmup = sunday.getByText(/^Warm-up/);
+  const ramp = sunday.getByText(/^Ramp:/).first();
+  const before = sunday.getByText(/^Before this:/).first();
+  const label = sunday.locator("label").filter({ hasText: /cues/i });
+
+  // Hidden by default: cue, warm-up note, primer and ramp lines.
+  for (const el of [cue, warmup, ramp, before]) await expect(el).toBeHidden();
+  await expect(label).toHaveText("Show cues", { useInnerText: true });
+  // Lifter notes and the planned/done cells stay visible.
+  await expect(sunday.locator('[data-cell="done"]').first()).toBeVisible();
+
+  await label.click();
+  await expect(toggle).toBeChecked();
+  await expect(label).toHaveText("Hide cues", { useInnerText: true });
+  for (const el of [cue, warmup, ramp, before]) await expect(el).toBeVisible();
+
+  await label.click();
+  await expect(toggle).not.toBeChecked();
+  for (const el of [cue, warmup, ramp, before]) await expect(el).toBeHidden();
+
+  // Keyboard: Space on the focused checkbox toggles it too.
+  await toggle.focus();
+  await page.keyboard.press("Space");
+  await expect(cue).toBeVisible();
+
+  // The brief is a closed <details>; opening it reveals the highlights.
+  const brief = sunday.locator("details", { hasText: "Brief" });
+  await expect(brief).toHaveCount(1);
+  await expect(brief.locator("summary")).toContainText(/Brief · \d{4}-\d{2}-\d{2} · \d+ notes?/);
+  expect(await brief.evaluate((d: HTMLDetailsElement) => d.open)).toBe(false);
+  await expect(brief.locator("li").first()).toBeHidden();
+  await brief.locator("summary").click();
+  await expect(brief.locator("li").first()).toBeVisible();
+
+  // Done column is visibly separated from the planned column on desktop.
+  if (testInfo.project.name === "desktop") {
+    const row = sunday.locator('li[data-exercise="Single Arm Cable Row"], li[data-exercise]:has-text("Single-Arm Cable Row")').first();
+    const p = (await row.locator('[data-cell="planned"]').boundingBox())!;
+    const d = (await row.locator('[data-cell="done"] > div').first().boundingBox())!;
+    expect(d.x - (p.x + p.width)).toBeGreaterThanOrEqual(20);
+  }
+});
+
 test("sessions that are not logged yet have no report", async ({ page }) => {
   await page.goto("/dashboard/program");
   await page.getByRole("tab", { name: /^Week 6/ }).click();
   await expect(page.getByRole("region", { name: "Planned versus done" })).toHaveCount(0);
   await expect(page.locator("li[data-exercise]").filter({ visible: true })).toHaveCount(0);
+
+  // Unlogged cards show their cues and have no toggle.
+  const card = page.locator("article", { hasText: "Mon ·" }).filter({ visible: true }).first();
+  await expect(card.getByRole("checkbox")).toHaveCount(0);
+  await expect(card.getByText(/^Warm-up/)).toBeVisible();
+  await expect(card.getByText(/^Ramp:/).first()).toBeVisible();
+  await expect(card.locator("li p.text-muted").first()).toBeVisible();
 });

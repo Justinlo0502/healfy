@@ -68,9 +68,11 @@ function DayCard({
     return r;
   });
   const loose = [...pending.values()];
+  // Logged cards keep coaching text behind the "Show cues" toggle; planned-only cards show it.
+  const hideCue = report ? "hidden group-has-[.cue-toggle:checked]/card:block" : "";
   return (
     <article
-      className={`overflow-hidden rounded-2xl border bg-surface shadow-card ${isToday ? "border-accent" : "border-line"}`}
+      className={`group/card overflow-hidden rounded-2xl border bg-surface shadow-card ${isToday ? "border-accent" : "border-line"}`}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-line px-5 py-3.5">
         <div>
@@ -94,10 +96,26 @@ function DayCard({
             ) : null}
           </h3>
         </div>
-        <p className="font-mono text-xs text-muted">≈{day.minutes} min</p>
+        <div className="flex items-center gap-3">
+          {report ? (
+            // No-JS toggle: the checkbox state drives every `group-has-[.cue-toggle:checked]/card:` rule below.
+            <label className="relative cursor-pointer select-none rounded-full border border-line px-2.5 py-0.5 font-sans text-[11px] font-semibold text-muted hover:text-foreground has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-accent">
+              <input type="checkbox" className="cue-toggle sr-only" />
+              <span className="group-has-[.cue-toggle:checked]/card:hidden">Show cues</span>
+              <span className="hidden group-has-[.cue-toggle:checked]/card:inline">Hide cues</span>
+            </label>
+          ) : null}
+          <p className="font-mono text-xs text-muted">≈{day.minutes} min</p>
+        </div>
       </div>
 
-      <p className="border-b border-line px-5 py-2.5 text-sm text-muted">{day.note(week)}</p>
+      <p
+        className={`border-b border-line px-5 py-2.5 text-sm text-muted ${
+          report ? "hidden group-has-[.cue-toggle:checked]/card:block" : ""
+        }`}
+      >
+        {day.note(week)}
+      </p>
 
       {report ? (
         <div
@@ -106,7 +124,7 @@ function DayCard({
         >
           <span className="col-start-2">Exercise</span>
           <span className="text-right">Planned</span>
-          <span>Done</span>
+          <span className="sm:pl-4">Done</span>
         </div>
       ) : null}
       <ul>
@@ -140,21 +158,27 @@ function DayCard({
                     </span>
                   ) : null}
                 </p>
-                <p className="mt-0.5 max-w-prose text-[13px] leading-snug text-muted">{cueFor(ex, week)}</p>
+                <p className={`mt-0.5 max-w-prose text-[13px] leading-snug text-muted ${hideCue}`}>{cueFor(ex, week)}</p>
                 {ex.primer?.length ? (
-                  <p className="mt-1 font-mono text-xs text-muted">
+                  <p className={`mt-1 font-mono text-xs text-muted ${hideCue}`}>
                     Before this: {ex.primer.map((p) => `${p.name} ${p.rx(week).repsLabel}`).join(" · ")}
                   </p>
                 ) : null}
-                {ramp ? <p className="mt-1 font-mono text-xs text-muted">Ramp: {rampLabel(ramp)}</p> : null}
+                {ramp ? <p className={`mt-1 font-mono text-xs text-muted ${hideCue}`}>Ramp: {rampLabel(ramp)}</p> : null}
               </div>
-              <div data-cell="planned" className="col-start-2 font-mono tabular-nums sm:col-start-3 sm:text-right">
+              <div
+                data-cell="planned"
+                className={`col-start-2 font-mono tabular-nums sm:col-start-3 sm:text-right ${
+                  // Logged cards on mobile: scheme, load and rest on one line to keep the row short.
+                  report ? "flex flex-wrap items-baseline gap-x-2 sm:block" : ""
+                }`}
+              >
                 <p className="whitespace-nowrap text-[15px] font-medium">{schemeLabel(rx)}</p>
                 {rx.loadLabel ? <p className="whitespace-nowrap text-xs text-muted">{rx.loadLabel}</p> : null}
                 {rest ? <p className="whitespace-nowrap text-xs text-muted">rest {rest}</p> : null}
               </div>
               {report ? (
-                <div data-cell="done" className="col-start-2 mt-1 sm:col-start-4 sm:mt-0">
+                <div data-cell="done" className="col-start-2 mt-1 sm:col-start-4 sm:mt-0 sm:border-l sm:border-line sm:pl-4">
                   {result ? <DoneCell r={result} /> : <span className="text-xs text-muted">Not logged</span>}
                   {result?.notes ? (
                     <p className="mt-1 max-w-prose text-[13px] italic text-muted">&ldquo;{result.notes}&rdquo;</p>

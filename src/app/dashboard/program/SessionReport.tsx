@@ -80,8 +80,10 @@ export function DoneCell({ r }: { r: ExerciseResult }) {
               </span>
             );
           })}
+          {r.topE1RM != null ? (
+            <span className="ml-1 font-mono text-[11px] text-muted">e1RM {r.topE1RM} lb</span>
+          ) : null}
         </div>
-        {r.topE1RM != null ? <p className="mt-0.5 font-mono text-[11px] text-muted">e1RM {r.topE1RM} lb</p> : null}
       </div>
     </div>
   );
@@ -189,14 +191,16 @@ export default function SessionReport({
       ) : null}
 
       {briefing ? (
-        <div className="border-t border-line px-5 py-2.5">
-          <p className="font-mono text-[11px] uppercase tracking-wide text-muted">Brief · {briefing.date}</p>
-          <ul className="mt-1 flex max-w-prose list-disc flex-col gap-1 pl-5 text-[13px] text-muted">
+        <details className="border-t border-line px-5 py-2.5">
+          <summary className="cursor-pointer font-mono text-[11px] uppercase tracking-wide text-muted hover:text-foreground">
+            Brief · {briefing.date} · {briefing.highlights.length} {briefing.highlights.length === 1 ? "note" : "notes"}
+          </summary>
+          <ul className="mt-2 flex max-w-prose list-disc flex-col gap-1 pl-5 text-[13px] text-muted">
             {briefing.highlights.map((h, i) => (
               <li key={i}>{h}</li>
             ))}
           </ul>
-        </div>
+        </details>
       ) : null}
     </section>
   );
