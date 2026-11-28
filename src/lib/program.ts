@@ -122,16 +122,16 @@ type Step = [number, number, number];
 
 /** Monday bench volume: add a set, then add 5 lb. Logged 155 × 8 × 4 (Nov 16) and 160 × 8 × 5 (Nov 23), 5 lb over the plan both times, so weeks 3–5 climb from 160. */
 const BENCH_VOLUME: Step[] = [[4, 8, 150], [5, 8, 155], [4, 8, 165], [5, 8, 165], [5, 8, 170], [3, 5, 135]];
-/** Wednesday paused bench 4 × 5. Logged 165 × 5, 5, 5, 4 on Nov 18 (one rep short on the last set), so 165 repeats before it climbs. */
-const PAUSED_BENCH: Step[] = [[4, 5, 165], [4, 5, 165], [4, 5, 170], [4, 5, 170], [4, 5, 175], [3, 5, 145]];
+/** Wednesday paused bench 4 × 5. Logged 165 × 5, 5, 5, 4 (Nov 18) and 170 × 5 × 4 (Nov 25, all sets), so it climbs 5 lb from 170. */
+const PAUSED_BENCH: Step[] = [[4, 5, 165], [4, 5, 170], [4, 5, 175], [4, 5, 175], [4, 5, 180], [3, 5, 145]];
 /** Friday bench heavy 5 × 5+ (last set AMRAP). Logged 185 × 4 × 5 on Nov 20, 10 lb over the plan but a rep short on every set, so 185 repeats. */
 const BENCH_HEAVY: Step[] = [[5, 5, 175], [5, 5, 185], [5, 5, 190], [5, 5, 190], [5, 5, 195], [3, 3, 155]];
-/** Wednesday squat 5 × 5, the only squat day. Not logged in week 1 (barbell lunges instead), so the ladder holds at 200 for week 2. Before that: 215 × 3, 3, 3, 3, 6 (Nov 2) and 185 × 8, 8, 8 (Nov 11). */
-const SQUAT: Step[] = [[5, 5, 200], [5, 5, 200], [5, 5, 205], [5, 5, 210], [5, 5, 215], [3, 5, 185]];
+/** Wednesday squat 5 × 5, the only squat day. Logged 225 × 5, 5 on Nov 25 (25 lb over the plan, 2 of 5 sets), so 225 repeats as a full 5 × 5 before it climbs. */
+const SQUAT: Step[] = [[5, 5, 200], [5, 5, 200], [5, 5, 225], [5, 5, 230], [5, 5, 235], [3, 5, 185]];
 /** Monday deadlift 3 × 8 (GZCLP T2). Logged 225 × 8, 8, 8 on Nov 16; not logged on Nov 23, so week 3 repeats 230. */
 const DEADLIFT_VOLUME: Step[] = [[3, 8, 225], [3, 8, 230], [3, 8, 230], [3, 8, 235], [3, 8, 235], [2, 5, 205]];
-/** Friday deadlift 5 × 3+ (GZCLP T1). Skipped on Nov 20, so the ladder holds at 255 for week 2. Before that: 275 × 3, 2, 2 (Nov 6), which missed reps. */
-const DEADLIFT_HEAVY: Step[] = [[5, 3, 255], [5, 3, 255], [5, 3, 265], [5, 3, 270], [5, 3, 275], [3, 3, 225]];
+/** Friday deadlift 5 × 3+ (GZCLP T1). Skipped Nov 20; 255 × 5, 5 on Nov 27 was only 2 of 5 sets, so 255 repeats in week 3. Before that: 275 × 3, 2, 2 (Nov 6), which missed reps. */
+const DEADLIFT_HEAVY: Step[] = [[5, 3, 255], [5, 3, 255], [5, 3, 255], [5, 3, 265], [5, 3, 270], [3, 3, 225]];
 /** Sunday weighted pull-up 5 × 3+, added lb. Logged +65 × 3, 3, 2 then +62.5 × 3, 3 on Nov 22 (a miss), so +65 repeats. */
 const PULLUP_HEAVY: Step[] = [[5, 3, 65], [5, 3, 65], [5, 3, 70], [5, 3, 75], [5, 3, 75], [3, 3, 45]];
 
@@ -353,18 +353,18 @@ export const PROGRAM_DAYS: ProgramDay[] = [
       },
       {
         name: "Smith Incline Press", hevyTitle: "Incline Bench Press (Smith Machine)", tier: "T2", restSeconds: 90,
-        rx: (w) => ({ sets: acc(w), reps: 8, repsLabel: "8–10", weightLb: 100, loadLabel: "100 lb" }),
-        cue: "Upper chest, a different angle from flat bench. You did 100 × 8, 8, 8 on Nov 18. When all 3 sets hit 10 at 100, add 5 lb. The incline machine is a fine swap.",
+        rx: (w) => ({ sets: acc(w), reps: 8, repsLabel: "8–10", weightLb: 110, loadLabel: "110 lb" }),
+        cue: "Upper chest, a different angle from flat bench. You did 100 × 8, 8, 8 on Nov 18, then 110 × 7, 7, 7 on Nov 25. Stay at 110 until all 3 sets hit 8, then build to 10 before adding 5 lb. The incline machine is a fine swap.",
       },
       {
-        name: "Single-Arm Overhead Triceps Extension", hevyTitle: "Single Arm Tricep Extension (Dumbbell)", tier: "T3", restSeconds: 0, superset: "A",
-        rx: (w) => ({ sets: acc(w), reps: 10, repsLabel: "10–12 / arm", weightLb: null, loadLabel: "pick a 12-rep DB" }),
-        cue: "Superset with the leg curl: both arms, then straight into the curl, rest 75 s. No log for this one yet, so pick a dumbbell you could do 12–14 times (your two-arm cable version was 40 × 10). Elbow points up and stays still, full stretch behind the head. Stop the set if the elbow goes over 3/10.",
+        name: "Single-Arm Triceps Pushdown (Cable)", hevyTitle: "Single Arm Triceps Pushdown (Cable)", tier: "T3", restSeconds: 60,
+        rx: (w) => ({ sets: acc(w), reps: 6, repsLabel: "6–10 / arm", weightLb: 25, loadLabel: "25 lb" }),
+        cue: "Replaces the overhead DB extension, which you swapped out on Nov 18 and Nov 25. Elbow pinned to the side, full lockout, 2 s down. You did 20 × 10, 25 × 10, 25 × 6 on Nov 18, then 25 × 6, 6, 6 on Nov 25. Stay at 25 until all 3 sets hit 8, then build to 10. Stop the set if the elbow goes over 3/10.",
       },
       {
-        name: "Seated Leg Curl", hevyTitle: "Seated Leg Curl (Machine)", tier: "T3", restSeconds: 75, superset: "A",
+        name: "Seated Leg Curl", hevyTitle: "Seated Leg Curl (Machine)", tier: "T3", restSeconds: 75,
         rx: (w) => ({ sets: acc(w), reps: 8, repsLabel: "8–10", weightLb: 120, loadLabel: "120 lb" }),
-        cue: "Superset with the triceps extension. Hamstrings and knee health. 2 s squeeze, slow return. You did 120 × 7, 7, 7 on Nov 9. Build all 3 sets to 10 before going up.",
+        cue: "Hamstrings and knee health. 2 s squeeze, slow return. You did 120 × 7, 7, 7 on Nov 9. Build all 3 sets to 10 before going up.",
       },
     ],
   },
@@ -438,7 +438,7 @@ export const PROGRAM_DAYS: ProgramDay[] = [
           deload(w,
             w === 1
               ? "Heavy day, now 5s instead of 3s for more volume. 175 is about 82% of the 210–215 you think your max is (225 was missed on Nov 13), and your last heavy sets were 185 × 3 × 5 on Nov 6. Last set AMRAP, 1 clean rep left. Every set at 5+ → +5 lb; AMRAP of 8+ → an extra +5. A missed set repeats the load."
-              : "You did 185 × 4, 4, 4, 4, 4 on Nov 20 (e1RM 210): 10 lb over the plan, but every set was a rep short, so 185 repeats until all 5 sets hit 5. Last set AMRAP, 1 clean rep left. Every set at 5+ → +5 lb; AMRAP of 8+ → an extra +5. A missed set repeats the load. Feet planted, glutes on the bench."),
+              : "You did 185 × 4, 4, 4, 4, 4 on Nov 20, then 185 × 5 × 5 on Nov 27 (e1RM 216), every set at target, so +5 lb now. Last set AMRAP, 1 clean rep left. Every set at 5+ → +5 lb; AMRAP of 8+ → an extra +5. A missed set repeats the load. Feet planted, glutes on the bench."),
       },
       {
         name: "Deadlift · heavy", hevyTitle: "Deadlift (Barbell)", tier: "T1", restSeconds: 150,
@@ -448,10 +448,10 @@ export const PROGRAM_DAYS: ProgramDay[] = [
           deload(w,
             w === 1
               ? "GZCLP T1. You did 275 × 3, 2, 2 on Nov 6 (missed reps, e1RM 302) and 225 × 6, 7, 8 on Nov 13, so the ladder restarts at 255 and climbs 10, then 5 a week. Reset every rep: bar over mid-foot, lats tight, push the floor away. Last set AMRAP, 1 clean rep left. A set under 3 repeats the load."
-              : "No heavy deadlift was logged on Nov 20, so the ladder did not move and week 2 starts at 255. Last heavy sets: 275 × 3, 2, 2 on Nov 6, and 225 × 8, 8, 8 on Nov 16 (Monday volume). Reset every rep: bar over mid-foot, lats tight, push the floor away. Last set AMRAP, 1 clean rep left. Every set at 3+ → next step; a set under 3 repeats the load. If something hurt, tell me and I will change the plan."),
+              : "No heavy deadlift was logged on Nov 20, and you did 255 × 5, 5 on Nov 27 (e1RM 297, but only 2 of 5 sets), so 255 repeats in week 3. Last heavy sets: 275 × 3, 2, 2 on Nov 6, and 225 × 8, 8, 8 on Nov 16 (Monday volume). Reset every rep: bar over mid-foot, lats tight, push the floor away. Last set AMRAP, 1 clean rep left. Every set at 3+ → next step; a set under 3 repeats the load. If something hurt, tell me and I will change the plan."),
       },
       {
-        name: "Pull-up · volume", hevyTitle: "Pull Up", tier: "T2", restSeconds: 60,
+        name: "Pull-up · volume", hevyTitle: "Pull Up", tier: "T2", restSeconds: 90,
         rx: (w) => {
           if (w === DELOAD_WEEK) return { sets: 1, repsLabel: "max (test)", weightLb: 0, loadLabel: "BW" };
           const v = PULLUP_VOLUME[w - 1];
@@ -462,18 +462,18 @@ export const PROGRAM_DAYS: ProgramDay[] = [
           if (w === DELOAD_WEEK)
             return "Pull-up AMRAP test: one all-out set after scapular pull-ups. Bench and deadlift are light this week, so you come in fresh. Dead hang at the bottom, chin over the bar, no kipping. Best recent sets: 18 (Nov 20) and 14 (Aug 5). Log the number; it sets up the next block.";
           const v = PULLUP_VOLUME[w - 1];
-          return `Training for the AMRAP test (Armstrong / 7 Weeks to 50 style). Set 1 is a max set: dead hang, chin over the bar, stop when form breaks. Then sets of ${v.size} with 60 s rest until you reach ${v.total} reps in total, max set included; log however many sets that takes. If a set falls short of ${v.size}, finish the total in smaller sets. You did 18, 8, 5, 4, 4, 3 on Nov 20: 42 reps against a total of 40, with a new best on the max set.`;
+          return `Training for the AMRAP test (Armstrong / 7 Weeks to 50 style). Set 1 is a max set: dead hang, chin over the bar, stop when form breaks. Then sets of ${v.size} with 90 s rest (take a full 2 min after the max set) until you reach ${v.total} reps in total, max set included; log however many sets that takes. If a set falls short of ${v.size}, finish the total in smaller sets. You did 18, 8, 5, 4, 4, 3 on Nov 20 (42 reps) and 17, 6, 5, 5, 5, 3, 5 on Nov 27 (46 reps against 45).`;
         },
       },
       {
         name: "45° Back Extension", hevyTitle: "Back Extension (Weighted Hyperextension)", tier: "T3", restSeconds: 0, superset: "A",
         rx: (w) => ({ sets: acc(w), reps: 8, repsLabel: "8–10", weightLb: 95, loadLabel: "95 lb" }),
-        cue: "Superset with the hammer curl: back extension, then straight into the curl, rest 60 s. Hinge at the hips with a neutral spine and a 2 s hold at the top. You did 90 × 10, 10, 10 on Nov 20, the top of the range, so 95 now. Build to 3 × 10 before adding weight. If the session is past 75 min, this pair is the first to go.",
+        cue: "Superset with the hammer curl: back extension, then straight into the curl, rest 60 s. Hinge at the hips with a neutral spine and a 2 s hold at the top. You did 90 × 10, 10, 10 on Nov 20, then 95 × 8, 8, 8 on Nov 27. Build to 3 × 10 at 95 before adding weight. If the session is past 75 min, this pair is the first to go.",
       },
       {
         name: "Hammer Curl", hevyTitle: "Hammer Curl (Dumbbell)", tier: "T3", restSeconds: 60, superset: "A",
         rx: (w) => ({ sets: acc(w), reps: 8, repsLabel: "8–12", weightLb: 25, loadLabel: "25s" }),
-        cue: "Superset with the back extension. Back to 25s: 30 × 5, 5 on Nov 13 was a grind, and heavy hammer curls have flared the elbow before. Slow 3 s lowering, no swinging. You did 25 × 9, 9, 9 on Nov 20. Build all 3 sets to 12 at 25s before trying 30s again. Stop the set if the elbow goes over 3/10.",
+        cue: "Superset with the back extension. Back to 25s: 30 × 5, 5 on Nov 13 was a grind, and heavy hammer curls have flared the elbow before. Slow 3 s lowering, no swinging. You did 25 × 9, 9, 9 on Nov 20, then 25 × 10, 10, 10 on Nov 27. Build all 3 sets to 12 at 25s before trying 30s again. Stop the set if the elbow goes over 3/10.",
       },
     ],
   },

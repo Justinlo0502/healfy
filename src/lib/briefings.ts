@@ -17,6 +17,30 @@ export type Briefing = {
 };
 
 export const BRIEFINGS: Record<string, Briefing> = {
+  "W2-Wed": {
+    date: "2026-11-27",
+    verdict: "mixed",
+    summary:
+      "84 minutes, 9 over the cap. Paused bench was clean and the squat was the heaviest of the block, but only two of the five squat sets were logged.",
+    highlights: [
+      "Paused bench: 170 × 5 × 4 against 4 × 5 at 170, every set at target (e1RM 198). It goes up 5 lb: 175 in week 3.",
+      "Squat: 225 × 5, 5 against 5 × 5 at 200. That is 25 lb over the plan, but two sets instead of five. The e1RM of 262.5 is 23 lb above the expected 239. Missing sets mean no advance, so 225 repeats as a full 5 × 5 in week 3, then 230 and 235.",
+      "Smith incline 110 × 7, 7, 7 against 3 × 8–10 at 100: 10 lb heavier than planned and a rep under the range. It stays at 110 until all three sets hit 8.",
+      "Triceps: the cable single-arm pushdown (25 × 6, 6, 6) replaced the overhead DB extension for the second week running, so it takes the slot for the rest of the block. The leg curl was dropped again, and a pec fly (50 × 8 × 3) was added.",
+    ],
+  },
+  "W2-Fri": {
+    date: "2026-11-27",
+    verdict: "mixed",
+    summary:
+      "109 minutes, 34 over the cap. Bench was clean and the pull-up total was hit, but the heavy deadlift was two sets of five instead of five sets.",
+    highlights: [
+      "Bench heavy: 185 × 5 × 5 against 5 × 5+ at 185, every set at target, AMRAP 5 (e1RM 215.8 against an expected 210, +5.8). It goes to 190 in week 3.",
+      "Deadlift heavy: 255 × 5, 5 against 5 × 3+ at 255. Two sets at the right load with 5 reps each (e1RM 297.5, +6 on the expected 291.5), but three sets missing, so 255 repeats in week 3 and then 265, 270.",
+      "Pull-up volume: 17, 6, 5, 5, 5, 3, 5 is 46 reps against a total of 45. The sets after the max fell to 3–6 against 6, the same pattern as last week (18, 8, 5, 4, 4, 3). Rest is now 90 s, with 2 min after the max set. Planned totals stay.",
+      "Back extension 95 × 8, 8, 8 and hammer curl 25 × 10, 10, 10 stay at their loads and add reps. A 66 s dead hang was added after the pull-ups.",
+    ],
+  },
   "W1-Wed": {
     date: "2026-11-24",
     verdict: "mixed",

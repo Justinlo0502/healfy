@@ -6,6 +6,20 @@ export type ProgramLogEntry = { date: string; title: string; changes: string[] }
 
 export const PROGRAM_LOG: ProgramLogEntry[] = [
   {
+    date: "2026-11-27",
+    title: "After Week 2 Wed and Fri",
+    changes: [
+      "Paused bench: 170 × 5 × 4 on Nov 25, every set, so week 3 is 4 × 5 at 175, week 4 at 175 and week 5 at 180.",
+      "Squat: 225 × 5, 5 on Nov 25 (2 of 5 sets, 25 lb over the plan). 225 repeats as a full 5 × 5 in week 3, then 230 and 235.",
+      "Friday bench heavy: 185 × 5 × 5 on Nov 27, every set, so week 3 is 190 as already planned.",
+      "Friday deadlift: 255 × 5, 5 on Nov 27 (2 of 5 sets). 255 repeats in week 3, then 265 and 270.",
+      "Friday pull-ups keep the planned totals (17, 6, 5, 5, 5, 3, 5 is 46 on Nov 27). Rest goes from 60 s to 90 s, with 2 min after the max set, since the sets after a max kept falling to 3–5.",
+      "Smith incline to 110 (110 × 7, 7, 7 on Nov 25). Back extension stays at 95 and hammer curl at 25s to add reps.",
+      "The overhead DB triceps extension is replaced by the cable single-arm pushdown at 25 lb, after you swapped to it on Nov 18 and Nov 25. The leg curl no longer pairs with it.",
+      "Sessions ran 84 minutes on Wednesday and 109 on Friday. The leg curl has been dropped twice with no replacement and is waiting on your answer.",
+    ],
+  },
+  {
     date: "2026-11-24",
     title: "After Week 1 Wed, Fri, Sun and Week 2 Mon",
     changes: [
